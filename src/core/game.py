@@ -32,7 +32,7 @@ class Game:
             # camera stuff not yet
             self.current_stage.update(dt)
             
-            self.screen.fill((0, 0, 0))
+            self.screen.fill((53, 58, 26))
             self.current_stage.run(dt)
 
             self.present()
@@ -68,5 +68,5 @@ class Game:
         x = (win_w - new_w) // 2
         y = (win_h - new_h) // 2
 
-        self.window.fill((0, 0, 0))
+        self.window.fill((53, 58, 26))
         self.window.blit(scaled, (x, y))
