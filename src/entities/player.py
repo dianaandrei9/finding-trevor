@@ -16,6 +16,10 @@ class Player(pygame.sprite.Sprite):
         self.collision_sprites = collision_sprites
         print(self.collision_sprites)
         
+        # collision
+        self.collision_sprites = collision_sprites
+        print(self.collision_sprites)
+        
     def input(self):
         keys = pygame.key.get_pressed()
         input_vector = vector(0, 0)
