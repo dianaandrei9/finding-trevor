@@ -3,13 +3,18 @@ from src.settings import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites):
         super().__init__(groups)
-        self.image = pygame.Surface((128, 208))
-        self.image.fill('purple')
+        self.image = pygame.image.load("assets/sprites/tabitha.png").convert_alpha()
         self.rect = self.image.get_rect(topleft = pos)
         
         # movement
         self.direction = vector()
         self.speed = 300
+        self.actual_dx = 0
+        self.actual_dy = 0
+        
+        # collision
+        self.collision_sprites = collision_sprites
+        print(self.collision_sprites)
         
         # collision
         self.collision_sprites = collision_sprites
@@ -26,10 +31,16 @@ class Player(pygame.sprite.Sprite):
         self.direction = input_vector.normalize() if input_vector else input_vector
    
     def move(self, dt):
+        old_x = self.rect.x
         self.rect.x += self.direction.x * self.speed * dt
         self.collision('horizontal')
+
+        self.actual_dx = self.rect.x - old_x
+
+        old_y = self.rect.y
         self.rect.y += self.direction.y * self.speed * dt
         self.collision('vertical')
+        self.actual_dy = self.rect.y - old_y
     
     def collision (self, axis):
         for sprite in self.collision_sprites:

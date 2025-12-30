@@ -27,7 +27,7 @@ class Level:
     def update(self, dt: float):
         player = next((s for s in self.all_sprites if isinstance(s, Player)), None)
         if player:
-            camera_dx = player.direction.x * player.speed * dt 
+            camera_dx = player.actual_dx
         else:
             camera_dx = 0 
         self.parallax.update(camera_dx)
