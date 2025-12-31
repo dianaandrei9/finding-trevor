@@ -7,7 +7,6 @@ class Level:
     def __init__(self, tmx_map, surface):
         self.display_surface = surface
         
-        from src.core.parallax_att import ParallaxBackground 
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5, 0.8] )
 
         # groups
@@ -33,7 +32,6 @@ class Level:
         self.parallax.update(camera_dx)
     
     def run(self, dt):
-        self.all_sprites.update(dt)
         self.parallax.draw(self.display_surface)
         self.all_sprites.update(dt)
         self.all_sprites.draw(self.display_surface)
