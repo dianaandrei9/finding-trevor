@@ -5,3 +5,4 @@ class Sprite(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = surf
         self.rect = self.image.get_rect(topleft = pos)
+        self.old_rect = self.rect.copy()
