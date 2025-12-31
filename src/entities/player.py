@@ -13,12 +13,12 @@ class Player(pygame.sprite.Sprite):
 
         # movement
         self.direction = vector()
-        self.speed = 300
-        self.gravity = 350
+        self.speed = 400
+        self.gravity = 1000
         self.actual_dx = 0
         self.actual_dy = 0
         self.jump = False
-        self.jump_height = 500
+        self.jump_height = 600
 
         # collision
         self.collision_sprites = Collision(collision_sprites)
@@ -27,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         # timer
         self.timers = {
             'wall jump': Timer(300),
-            'jump wait': Timer(250)
+            'jump wait': Timer(50)
         }
 
     def input(self):
@@ -48,9 +48,8 @@ class Player(pygame.sprite.Sprite):
         # horizontal
         old_x = self.rect.x
         self.rect.x += self.direction.x * self.speed * dt
-
-        self.actual_dx = self.rect.x - old_x
         self.collision_sprites.resolve(self.rect, self.old_rect, 'horizontal')
+        self.actual_dx = self.rect.x - old_x
 
         # vertical
         old_y = self.rect.y
@@ -73,10 +72,11 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = 1 if self.on_surface['left'] else -1
             self.jump = False
 
-        self.actual_dy = self.rect.y - old_y
         hit_vertical = self.collision_sprites.resolve(self.rect, self.old_rect, 'vertical')
         if hit_vertical:
             self.direction.y = 0
+        self.actual_dy = self.rect.y - old_y
+
 
     def update_timers(self):
         for timer in self.timers.values():
