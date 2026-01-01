@@ -31,14 +31,19 @@ class Player(pygame.sprite.Sprite):
         # timer
         self.timers = {
             'wall jump': Timer(300),
-            'jump wait': Timer(50)
+            'jump wait': Timer(50),
+            'land': Timer(120)
         }
         
         # animations
         self.animations = {
             'idle': [],
             'walk': [],
-            'walk_back': []
+            'walk_back': [],
+            'jump_right': [],
+            'jump_left': [],
+            'fall_right': [],
+            'fall_left': []
         }
 
         self.status = 'idle'
@@ -49,6 +54,12 @@ class Player(pygame.sprite.Sprite):
         self.animations['idle'] = self.load_frames('assets/sprites/tabitha_standing_animation')
         self.animations['walk'] = self.load_frames('assets/sprites/tabitha_running_animation')
         self.animations['walk_back'] = self.load_frames('assets/sprites/tabitha_running_back_animation')
+        self.animations['jump_right'] = self.load_frames("assets/sprites/tabitha_jump_animation")
+        self.animations['jump_left'] = self.load_frames("assets/sprites/tabitha_jump_back_animation")
+        self.animations['fall_right'] = self.load_frames("assets/sprites/tabitha_fall_animation")
+        self.animations['fall_left'] = self.load_frames("assets/sprites/tabitha_fall_back_animation")
+        jump_frames = self.animations["jump_right"]  # or jump_left
+        self.animations["land"] = jump_frames[-4:]
 
         # start with first idle frame
         self.image = self.animations['idle'][0]
@@ -62,15 +73,52 @@ class Player(pygame.sprite.Sprite):
         return frames
 
     def get_status(self):
+
+        # Landing - overwrites all
+        if self.timers["land"].active:
+            self.status = "land"
+            return
+
+        # Jumping upward
+        if self.direction.y < 0:
+            if self.direction.x < 0:
+                self.status = "jump_left"
+            else:
+                self.status = "jump_right"
+            return
+
+        # Falling downward (must check NOT on floor)
+        if not self.on_surface['floor'] and self.direction.y > 0:
+            if self.direction.x < 0:
+                self.status = "fall_left"
+            else:
+                self.status = "fall_right"
+            return
+
+        # Running on ground
         if self.direction.x > 0:
-            self.status = 'walk'
+            self.status = "walk"
         elif self.direction.x < 0:
-            self.status = 'walk_back'
+            self.status = "walk_back"
         else:
-            self.status = 'idle'
+            self.status = "idle"
 
 
     def animate(self, dt):
+
+        if self.status == "land":
+            frames = self.animations["land"]
+            speed = 12  # fast snap landing
+
+            self.frame_index += speed * dt
+
+            # stop at last frame (do NOT loop)
+            if self.frame_index >= len(frames):
+                self.frame_index = len(frames) - 1
+
+            self.image = frames[int(self.frame_index)]
+            return 
+
         frames = self.animations[self.status]
 
         # different speeds per animation
@@ -78,13 +126,21 @@ class Player(pygame.sprite.Sprite):
             speed = 2      # slow
         elif self.status in ('walk', 'walk_back'):
             speed = 10     # normal
+        elif self.status in ('jump_right', 'jump_left'):
+            speed = 3
+        elif self.status in ('fall_right', 'fall_left'):
+            speed = 2
         else:
             speed = 10
 
         self.frame_index += speed * dt
 
-        if self.frame_index >= len(frames):
-            self.frame_index = 0
+        if self.status in ('jump_right', 'jump_left'):
+            if self.frame_index >= len(frames):
+                self.frame_index = len(frames) - 1
+        else:
+            if self.frame_index >= len(frames):
+                self.frame_index = 0
 
         # rect update
         self.image = frames[int(self.frame_index)]
@@ -150,7 +206,20 @@ class Player(pygame.sprite.Sprite):
         self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'horizontal')
         self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'vertical')
 
+        
         self.rect.center = self.hitbox_rect.center
+        
+        just_landed = (
+            self.on_surface['floor'] and
+            self.direction.y == 0 and
+            self.old_rect.y < self.hitbox_rect.y and
+            not self.timers["land"].active
+        )
+
+        if just_landed:
+            self.timers["land"].activate()
+            self.status = "land"
+            self.frame_index = 0
 
         self.get_status()
         self.animate(dt)
