@@ -30,23 +30,23 @@ class Collision:
         for sprite in self.collision_sprites:
             if sprite.rect.colliderect(rect):
                 collided = True
-
+                
                 if axis == 'horizontal':
                     # left
-                    if rect.left <= sprite.rect.right and old_rect.left >= sprite.old_rect.right:
+                    if rect.left <= sprite.rect.right and int(old_rect.left) >= sprite.old_rect.right: # pygame doesnt like float sometimes
                         rect.left = sprite.rect.right
                     
                     # right
-                    if rect.right >= sprite.rect.left and old_rect.right <= sprite.old_rect.left:
+                    if rect.right >= sprite.rect.left and int(old_rect.right) <= sprite.old_rect.left:
                         rect.right = sprite.rect.left
                     
                 else: # vertical
                     # top
-                    if rect.top <= sprite.rect.bottom and old_rect.top >= sprite.old_rect.bottom:
+                    if rect.top <= sprite.rect.bottom and int(old_rect.top) >= sprite.old_rect.bottom:
                         rect.top = sprite.rect.bottom
                     
                     # bottom
-                    if rect.bottom >= sprite.rect.top and old_rect.bottom <= sprite.old_rect.top:
+                    if rect.bottom >= sprite.rect.top and int(old_rect.bottom) <= sprite.old_rect.top:
                         rect.bottom = sprite.rect.top
         return collided
     
