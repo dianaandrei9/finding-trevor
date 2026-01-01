@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.old_rect = self.rect.copy()
 
         # movement
+        self.pos = pos
         self.direction = vector()
         self.speed = 400
         self.gravity = 1000
@@ -110,12 +111,12 @@ class Player(pygame.sprite.Sprite):
 
         # vertical
         old_y = self.rect.y
+        self.direction.y += self.gravity * dt
         # sliding on walls yeah
-        if (self.direction.y > 0 and not self.on_surface['floor'] and any((self.on_surface['left'], self.on_surface['right']))):
+        if (not self.on_surface['floor'] and any((self.on_surface['left'], self.on_surface['right'])) and self.direction.y > 0):
             self.direction.y = min(self.direction.y, self.gravity * 0.1)
-        else:
-            self.direction.y += self.gravity * dt
-            self.rect.y += self.direction.y * dt
+        self.rect.y += self.direction.y * dt
+
 
         hit_vertical = self.collision_sprites.resolve(self.rect, self.old_rect, 'vertical')
         if hit_vertical:
