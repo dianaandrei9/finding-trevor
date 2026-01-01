@@ -84,9 +84,8 @@ class Player(pygame.sprite.Sprite):
             self.frame_index = 0
 
         # rect update
-        old_center = self.rect.center
         self.image = frames[int(self.frame_index)]
-        self.rect = self.image.get_rect(center=old_center)
+
 
     def input(self):
         keys = pygame.key.get_pressed()
