@@ -1,4 +1,5 @@
 from pytmx.util_pygame import load_pygame
+from src.settings import *
 from os.path import join
 from src.levels.level import Level
 
@@ -31,6 +32,8 @@ class LevelManager:
 
     def update(self, dt):
         self.current_level.update(dt)
-
+        if self.current_level.level_complete:
+            self.next_level()
+        
     def draw(self, dt):
         self.current_level.run(dt)

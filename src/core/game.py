@@ -1,5 +1,6 @@
 from src.settings import *
 from src.levels.level import Level
+from src.levels.level_manager import LevelManager
 from pytmx.util_pygame import load_pygame
 from os.path import join
 
@@ -20,25 +21,25 @@ class Game:
         
         # internal surf
         self.screen = pygame.Surface((BASE_WIDTH, BASE_HEIGHT))
-
         self.clock = pygame.time.Clock()
         self.running = True
 
-        # TMX
-        self.tmx_maps = {0: load_pygame(join("assets", "maps", "levels", "basic.tmx"))}
-        self.current_stage = Level(self.tmx_maps[0], self.screen)
+        # TMX    
+        self.level_manager = LevelManager(self.screen)
+
 
     def run(self):
         while self.running:
             dt = self.clock.tick(FPS) / 1000
-
+            
             self.handle_events()
-            # camera stuff not yet
-            self.current_stage.update(dt)
+
+            # level
+            self.level_manager.update(dt)
             
             self.screen.fill((53, 58, 26))
-            self.current_stage.run(dt)
-
+            self.level_manager.draw(dt)
+            
             self.present()
             pygame.display.update()
             
