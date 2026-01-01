@@ -3,6 +3,8 @@ from src.levels.level import Level
 from src.levels.level_manager import LevelManager
 from pytmx.util_pygame import load_pygame
 from os.path import join
+from src.core.menu import MainMenu
+from src.levels.level import Level
 
 class Game:
     def __init__(self):
@@ -16,6 +18,7 @@ class Game:
         pygame.display.set_caption("Finding Trevor")
         
         icon = pygame.image.load(join("assets", "graphics", "Trev_32x32.png")).convert_alpha()
+       
         # set window icon
         pygame.display.set_icon(icon)
         
@@ -24,6 +27,11 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
+        self.state = "menu"
+
+        # MENU
+        self.menu = MainMenu(self.screen)
+        
         # TMX    
         self.level_manager = LevelManager(self.screen)
 
@@ -31,20 +39,30 @@ class Game:
     def run(self):
         while self.running:
             dt = self.clock.tick(FPS) / 1000
-            
             self.handle_events()
 
-            # level
-            self.level_manager.update(dt)
-            
             self.screen.fill((53, 58, 26))
-            self.level_manager.draw(dt)
-            
+
+            # MENU STATE
+            if self.state == "menu":
+                result = self.menu.run()
+
+                if result == "start_game":
+                    # switch state immediately
+                    self.state = "game"
+                    continue  # skip drawing the menu frame
+
+            # GAME STATE
+            if self.state == "game":
+                self.level_manager.update(dt)
+                self.level_manager.draw(dt)
+
             self.present()
             pygame.display.update()
-            
+
         pygame.quit()
         sys.exit()
+
 
     def handle_events(self):
         for event in pygame.event.get():
