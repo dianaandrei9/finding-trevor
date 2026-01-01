@@ -33,7 +33,8 @@ class Player(pygame.sprite.Sprite):
         # animations
         self.animations = {
             'idle': [],
-            'walk': []
+            'walk': [],
+            'walk_back': []
         }
 
         self.status = 'idle'
@@ -43,6 +44,7 @@ class Player(pygame.sprite.Sprite):
         # load frames
         self.animations['idle'] = self.load_frames('assets/sprites/tabitha_standing_animation')
         self.animations['walk'] = self.load_frames('assets/sprites/tabitha_running_animation')
+        self.animations['walk_back'] = self.load_frames('assets/sprites/tabitha_running_back_animation')
 
         # start with first idle frame
         self.image = self.animations['idle'][0]
@@ -56,10 +58,13 @@ class Player(pygame.sprite.Sprite):
         return frames
 
     def get_status(self):
-        if self.direction.x != 0:
+        if self.direction.x > 0:
             self.status = 'walk'
+        elif self.direction.x < 0:
+            self.status = 'walk_back'
         else:
             self.status = 'idle'
+
 
     def animate(self, dt):
         frames = self.animations[self.status]
@@ -67,7 +72,7 @@ class Player(pygame.sprite.Sprite):
         # different speeds per animation
         if self.status == 'idle':
             speed = 2      # slow
-        elif self.status == 'walk':
+        elif self.status in ('walk', 'walk_back'):
             speed = 10     # normal
         else:
             speed = 10
@@ -77,7 +82,10 @@ class Player(pygame.sprite.Sprite):
         if self.frame_index >= len(frames):
             self.frame_index = 0
 
+        # rect update
+        old_center = self.rect.center
         self.image = frames[int(self.frame_index)]
+        self.rect = self.image.get_rect(center=old_center)
 
     def input(self):
         keys = pygame.key.get_pressed()
