@@ -98,9 +98,10 @@ class Level:
         
         # kill zone check
         for r in self.death_rects:
-            if self.player.rect.colliderect(r):
+            if self.player.hitbox_rect.colliderect(r):
                 # respawn
                 self.player.rect.topleft = self.player.pos
+                self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
                 self.player.direction.y = 0
         
         self.moving_sprites.update(dt)

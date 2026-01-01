@@ -10,6 +10,7 @@ class Player(pygame.sprite.Sprite):
 
         # rect
         self.rect = self.image.get_rect(topleft = pos)
+        self.hitbox_rect = self.rect.inflate(-5, 0)
         self.old_rect = self.rect.copy()
 
         # movement
@@ -32,6 +33,7 @@ class Player(pygame.sprite.Sprite):
             'wall jump': Timer(300),
             'jump wait': Timer(50)
         }
+        
         # animations
         self.animations = {
             'idle': [],
@@ -104,49 +106,51 @@ class Player(pygame.sprite.Sprite):
             
     def move(self, dt):
         # horizontal
-        old_x = self.rect.x
-        self.rect.x += self.direction.x * self.speed * dt
-        self.collision_sprites.resolve(self.rect, self.old_rect, 'horizontal')
-        self.actual_dx = self.rect.x - old_x
+        old_x = self.hitbox_rect.x
+        self.hitbox_rect.x += self.direction.x * self.speed * dt
+        self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'horizontal')
+        self.actual_dx = self.hitbox_rect.x - old_x
 
         # vertical
-        old_y = self.rect.y
+        old_y = self.hitbox_rect.y
         self.direction.y += self.gravity * dt
         # sliding on walls yeah
         if (not self.on_surface['floor'] and any((self.on_surface['left'], self.on_surface['right'])) and self.direction.y > 0):
             self.direction.y = min(self.direction.y, self.gravity * 0.1)
-        self.rect.y += self.direction.y * dt
+        self.hitbox_rect.y += self.direction.y * dt
 
 
-        hit_vertical = self.collision_sprites.resolve(self.rect, self.old_rect, 'vertical')
+        hit_vertical = self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'vertical')
         if hit_vertical:
             self.direction.y = 0
-        self.actual_dy = self.rect.y - old_y
+        self.actual_dy = self.hitbox_rect.y - old_y
+        self.rect.center = self.hitbox_rect.center
 
-    # def platform_move(self, dt):
-    #     if self.platform:
-    #         self.rect.topleft += self.platform.direction * self.platform.speed * dt
     def platform_move(self):
         if self.platform and self.on_surface['floor']:
             dx = self.platform.rect.x - self.platform.old_rect.x
             dy = self.platform.rect.y - self.platform.old_rect.y
-            self.rect.x += dx
-            self.rect.y += dy
+            self.hitbox_rect.x += dx
+            self.hitbox_rect.y += dy
+            self.rect.center = self.hitbox_rect.center
+
     
     def update_timers(self):
         for timer in self.timers.values():
             timer.update()
 
     def update(self, dt):
-        self.old_rect = self.rect.copy()
+        self.old_rect = self.hitbox_rect.copy()
         self.update_timers()
         self.input()
         self.move(dt)
-        self.on_surface, self.platform = self.collision_sprites.check_contact(self.rect)
+        self.on_surface, self.platform = self.collision_sprites.check_contact(self.hitbox_rect)
         self.platform_move()
 
-        self.collision_sprites.resolve(self.rect, self.old_rect, 'horizontal')
-        self.collision_sprites.resolve(self.rect, self.old_rect, 'vertical')
+        self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'horizontal')
+        self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'vertical')
+
+        self.rect.center = self.hitbox_rect.center
 
         self.get_status()
         self.animate(dt)
