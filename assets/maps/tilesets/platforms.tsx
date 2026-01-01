@@ -5,7 +5,7 @@
   <image source="../../graphics/platform3.png" width="192" height="48"/>
  </tile>
  <tile id="1">
-  <image source="../../graphics/platfrom1.png" width="192" height="48"/>
+  <image source="../../graphics/platform1.png" width="192" height="48"/>
  </tile>
  <tile id="2">
   <image source="../../graphics/platform2.png" width="192" height="48"/>

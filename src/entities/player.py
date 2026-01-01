@@ -15,17 +15,18 @@ class Player(pygame.sprite.Sprite):
         # movement
         self.pos = pos
         self.direction = vector()
-        self.speed = 400
-        self.gravity = 1000
+        self.speed = 300
+        self.gravity = 1050
         self.actual_dx = 0
         self.actual_dy = 0
         self.jump = False
         self.jump_height = 600
+        self.platform = None
 
         # collision
         self.collision_sprites = Collision(collision_sprites)
         self.on_surface = {'floor': False, 'left': False, 'right': False}
-
+ 
         # timer
         self.timers = {
             'wall jump': Timer(300),
@@ -100,7 +101,7 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_SPACE]:
             self.jump = True
-
+            
     def move(self, dt):
         # horizontal
         old_x = self.rect.x
@@ -122,7 +123,16 @@ class Player(pygame.sprite.Sprite):
             self.direction.y = 0
         self.actual_dy = self.rect.y - old_y
 
-
+    # def platform_move(self, dt):
+    #     if self.platform:
+    #         self.rect.topleft += self.platform.direction * self.platform.speed * dt
+    def platform_move(self):
+        if self.platform and self.on_surface['floor']:
+            dx = self.platform.rect.x - self.platform.old_rect.x
+            dy = self.platform.rect.y - self.platform.old_rect.y
+            self.rect.x += dx
+            self.rect.y += dy
+    
     def update_timers(self):
         for timer in self.timers.values():
             timer.update()
@@ -132,7 +142,12 @@ class Player(pygame.sprite.Sprite):
         self.update_timers()
         self.input()
         self.move(dt)
-        self.on_surface = self.collision_sprites.check_contact(self.rect)
+        self.on_surface, self.platform = self.collision_sprites.check_contact(self.rect)
+        self.platform_move()
+
+        self.collision_sprites.resolve(self.rect, self.old_rect, 'horizontal')
+        self.collision_sprites.resolve(self.rect, self.old_rect, 'vertical')
+
         self.get_status()
         self.animate(dt)
 
