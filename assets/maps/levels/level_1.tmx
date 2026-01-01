@@ -148,22 +148,19 @@
 </data>
  </layer>
  <objectgroup id="3" name="moving_platforms">
-  <object id="1" name="platform1" gid="100" x="624" y="848.125" width="192" height="48"/>
-  <object id="2" name="platform2" gid="101" x="1136.25" y="688.375" width="192" height="48"/>
-  <object id="3" name="platform3" gid="102" x="1264" y="528" width="192" height="48"/>
-  <object id="14" name="platform" x="624.5" y="822.5" width="382" height="5">
+  <object id="14" name="platform1" x="624.5" y="822.5" width="382" height="5">
    <properties>
     <property name="platform" type="bool" value="true"/>
     <property name="speed" type="int" value="60"/>
    </properties>
   </object>
-  <object id="15" name="platform" x="944.364" y="662.5" width="383.636" height="5">
+  <object id="15" name="platform2" x="944.364" y="662.5" width="383.636" height="5">
    <properties>
     <property name="platform" type="bool" value="true"/>
     <property name="speed" type="int" value="60"/>
    </properties>
   </object>
-  <object id="16" name="platform" x="1264" y="502.333" width="384.125" height="5">
+  <object id="16" name="platform3" x="1264" y="502.333" width="384.125" height="5">
    <properties>
     <property name="platform" type="bool" value="true"/>
     <property name="speed" type="int" value="60"/>

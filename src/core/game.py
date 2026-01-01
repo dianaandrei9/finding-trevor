@@ -13,7 +13,11 @@ class Game:
             pygame.RESIZABLE
         )
         pygame.display.set_caption("Finding Trevor")
-
+        
+        icon = pygame.image.load(join("assets", "graphics", "Trev_32x32.png")).convert_alpha()
+        # set window icon
+        pygame.display.set_icon(icon)
+        
         # internal surf
         self.screen = pygame.Surface((BASE_WIDTH, BASE_HEIGHT))
 
@@ -21,7 +25,7 @@ class Game:
         self.running = True
 
         # TMX
-        self.tmx_maps = {0: load_pygame(join("assets", "maps", "levels", "level_1.tmx"))}
+        self.tmx_maps = {0: load_pygame(join("assets", "maps", "levels", "basic.tmx"))}
         self.current_stage = Level(self.tmx_maps[0], self.screen)
 
     def run(self):

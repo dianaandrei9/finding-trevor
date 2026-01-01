@@ -1,6 +1,6 @@
 from src.settings import *
 from src.core.parallax_att import ParallaxBackground
-from src.assets.sprites import Sprite
+from src.assets.sprites import Sprite, MovingSprite
 from src.entities.player import Player
 from src.systems.collider import Collider
 
@@ -18,7 +18,7 @@ class Level:
         self.death_rects = []
 
         self.setup(tmx_map)
-        
+    
     def setup(self, tmx_map):
         # tiles
         for x,y,surf in tmx_map.get_layer_by_name('terrain').tiles():
@@ -30,17 +30,24 @@ class Level:
                 self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites)
         
         # trigger
-        for obj in tmx_map.get_layer_by_name('block_movement'):
-            if obj.name == "death":
-                self.death_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
-            if obj.name == "block_map":
-                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                Collider(rect, self.collision_sprites)
+        # for obj in tmx_map.get_layer_by_name('block_movement'):
+        #     if obj.name == "death":
+        #         self.death_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
+        #     if obj.name == "block_map":
+        #         rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+        #         Collider(rect, self.collision_sprites)
         
-        # moving objects (platforms)
-        for obj in tmx_map.get_layer_by_name('moving_platforms'):
-            pass
-        
+        # # moving objects (platforms)
+        # for obj in tmx_map.get_layer_by_name('moving_platforms'):
+        #     if obj.properties['platform']:
+        #         if obj.name == 'platform1':
+        #             # horizontal
+        #             move_dir = 'x'
+        #             start_pos = (obj.x, obj.y + obj.height / 2) # middle point start pos
+        #             end_pos = (obj.x + obj.width, obj.y + obj.height / 2) 
+        #             speed = obj.properties['speed']
+        #             MovingSprite(self.all_sprites, start_pos, end_pos, move_dir, speed)
+                
     def update(self, dt: float):   
         player = next((s for s in self.all_sprites if isinstance(s, Player)), None)
         if player:
