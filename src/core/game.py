@@ -21,7 +21,7 @@ class Game:
         self.running = True
 
         # TMX
-        self.tmx_maps = {0: load_pygame(join("assets", "maps", "levels", "basic.tmx"))}
+        self.tmx_maps = {0: load_pygame(join("assets", "maps", "levels", "level_1.tmx"))}
         self.current_stage = Level(self.tmx_maps[0], self.screen)
 
     def run(self):
