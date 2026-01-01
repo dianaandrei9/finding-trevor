@@ -8,7 +8,7 @@ class Level:
     def __init__(self, tmx_map, surface):
         self.display_surface = surface
         
-        self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5, 0.8] )
+        self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
 
         # groups
         self.all_sprites  = pygame.sprite.Group()

@@ -13,9 +13,9 @@ clock = pygame.time.Clock()
 
 screen = pygame.Surface((BASE_W, BASE_H))
 
-layer_files = [f"assets/parallax/{i}.png" for i in range(1, 10)]
+layer_files = [f"assets/parallax/{i}.png" for i in range(1, 9)]
 layers = [pygame.image.load(f).convert_alpha() for f in layer_files]
-factors = [0.0, 0.0, 0.10, 0.20, 0.30, 0.45, 0.60, 0.80, 1.00]
+factors = [0.0, 0.0, 0.10, 0.20, 0.30, 0.45, 0.60, 0.80]
 
 player_img = pygame.image.load("assets/sprites/tabitha.png").convert_alpha()
 player_x_world = 200.0
