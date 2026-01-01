@@ -38,7 +38,7 @@ class Level:
         #         Collider(rect, self.collision_sprites)
         
         # # moving objects (platforms)
-        # for obj in tmx_map.get_layer_by_name('moving_platforms'):
+        # for obj in tmx_map.get_layer_by_name('moving_platforms'): 
         #     if obj.properties['platform']:
         #         if obj.name == 'platform1':
         #             # horizontal
