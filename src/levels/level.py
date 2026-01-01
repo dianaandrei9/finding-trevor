@@ -20,21 +20,27 @@ class Level:
         self.setup(tmx_map)
         
     def setup(self, tmx_map):
-        for x,y,surf in tmx_map.get_layer_by_name('platforms').tiles():
+        # tiles
+        for x,y,surf in tmx_map.get_layer_by_name('terrain').tiles():
             Sprite((x * TILE_SIZE , y * TILE_SIZE), surf, (self.all_sprites, self.collision_sprites))
         
-        for obj in tmx_map.get_layer_by_name('Player'):
+        # objects
+        for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
                 self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites)
         
         # trigger
         for obj in tmx_map.get_layer_by_name('block_movement'):
-                if obj.name == "death":
-                    self.death_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
-                if obj.name == "block_map":
-                    rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
-                    Collider(rect, self.collision_sprites)
-            
+            if obj.name == "death":
+                self.death_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
+            if obj.name == "block_map":
+                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                Collider(rect, self.collision_sprites)
+        
+        # moving objects (platforms)
+        for obj in tmx_map.get_layer_by_name('moving_platforms'):
+            pass
+        
     def update(self, dt: float):   
         player = next((s for s in self.all_sprites if isinstance(s, Player)), None)
         if player:
@@ -47,7 +53,7 @@ class Level:
         for r in self.death_rects:
             if self.player.rect.colliderect(r):
                 # respawn
-                self.player.rect.topleft = (800, 244)
+                self.player.rect.topleft = self.player.pos
                 self.player.direction.y = 0
                 
     
