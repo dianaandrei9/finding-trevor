@@ -58,8 +58,7 @@ class Player(pygame.sprite.Sprite):
         self.animations['jump_left'] = self.load_frames("assets/sprites/tabitha_jump_back_animation")
         self.animations['fall_right'] = self.load_frames("assets/sprites/tabitha_fall_animation")
         self.animations['fall_left'] = self.load_frames("assets/sprites/tabitha_fall_back_animation")
-        jump_frames = self.animations["jump_right"]  # or jump_left
-        self.animations["land"] = jump_frames[-4:]
+        self.animations["land"] = self.load_frames("assets/sprites/tabitha_land_animation")
 
         # start with first idle frame
         self.image = self.animations['idle'][0]
@@ -127,7 +126,7 @@ class Player(pygame.sprite.Sprite):
         elif self.status in ('walk', 'walk_back'):
             speed = 10     # normal
         elif self.status in ('jump_right', 'jump_left'):
-            speed = 3
+            speed = 5
         elif self.status in ('fall_right', 'fall_left'):
             speed = 2
         else:
