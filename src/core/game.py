@@ -54,9 +54,12 @@ class Game:
 
             # GAME STATE
             if self.state == "game":
-                self.level_manager.update(dt)
+                result = self.level_manager.update(dt)
                 self.level_manager.draw(dt)
-
+                if result == "game_over":
+                    self.state = "menu"
+                    # self.level_manager.go_to_first_level()
+                    continue
             self.present()
             pygame.display.update()
 

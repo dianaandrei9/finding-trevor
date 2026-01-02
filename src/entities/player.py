@@ -4,15 +4,19 @@ from src.systems.collision import Collision
 import os
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, collision_sprites):
+    def __init__(self, pos, groups, collision_sprites, health):
         super().__init__(groups)
         self.image = pygame.image.load("assets/sprites/Tabitha-fixed.png").convert_alpha()
-
+        
         # rect
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox_rect = self.rect.inflate(-5, 0)
         self.old_rect = self.rect.copy()
 
+        # health
+        self.health = health
+        self.max_health = 3
+        
         # movement
         self.pos = pos
         self.direction = vector()

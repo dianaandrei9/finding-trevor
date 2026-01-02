@@ -3,9 +3,10 @@ from src.core.parallax_att import ParallaxBackground
 from src.assets.sprites import Sprite, MovingSprite
 from src.entities.player import Player
 from src.systems.collider import Collider
+from src.systems.health import Health
 
 class Level:
-    def __init__(self, tmx_map, surface):
+    def __init__(self, tmx_map, surface, health):
         self.display_surface = surface
         
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
@@ -15,12 +16,13 @@ class Level:
         self.all_sprites  = pygame.sprite.Group()
         self.collision_sprites = pygame.sprite.Group()
 
-        # death zones        
+        # death zone
         self.death_rects = []
-
+        self.start_health = health
         # end lvl
         self.level_complete = False
         self.level_end_rect = None
+        self.game_over = False
         
         self.setup(tmx_map)
 
@@ -47,10 +49,11 @@ class Level:
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
-                self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites)
+                self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health)
             if obj.name == "end_lvl":
                 self.level_end_rect = pygame.Rect( obj.x, obj.y, obj.width, obj.height)
-                
+        self.health = Health(self.display_surface, self.player.health, self.player.max_health)
+        
         # trigger
         for obj in tmx_map.get_layer_by_name('block_movement'):
             if obj.name == "death":
@@ -99,13 +102,21 @@ class Level:
         # kill zone check
         for r in self.death_rects:
             if self.player.hitbox_rect.colliderect(r):
-                # respawn
-                self.player.rect.topleft = self.player.pos
-                self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
-                self.player.direction.y = 0
+                if self.player.health > 1:
+                    # small respawn
+                    self.player.health -= 1
+                    self.player.rect.topleft = self.player.pos
+                    self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
+                    self.player.direction.y = 0
+                else:
+                    # big respawn == death => menu screen
+                    self.player.health = 0
+                    self.game_over = True
+                    return
         
         self.moving_sprites.update(dt)
         self.player.update(dt)
+        self.health.set_health(self.player.health)
         if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
             pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
             self.level_complete = True
@@ -113,3 +124,4 @@ class Level:
     def run(self, dt):
         self.parallax.draw(self.display_surface)
         self.all_sprites.draw(self.display_surface)
+        self.health.empty_hearts()
