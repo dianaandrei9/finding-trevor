@@ -7,6 +7,7 @@ from src.systems.health import Health
 from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
 from src.core.death_screen import GameOverMenu
+from os.path import join
 
 class Level:
     def __init__(self, tmx_map, surface, health):
@@ -69,6 +70,8 @@ class Level:
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
                 self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health)
+            if obj.name == 'Trevor':
+                self.trevor = Sprite((obj.x, obj.y), pygame.image.load(join("assets", "graphics", "Trev_64x64.png")), (self.all_sprites, self.collision_sprites))
             if obj.name == "end_lvl":
                 self.level_end_rect = pygame.Rect( obj.x, obj.y, obj.width, obj.height)
             if obj.name == "Key":
