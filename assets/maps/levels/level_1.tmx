@@ -184,7 +184,7 @@
   <object id="10" name="Tabitha" type="Player" x="244" y="656">
    <point/>
   </object>
-  <object id="19" name="enemy" x="1515.97" y="854.333">
+  <object id="19" name="shooter" x="1515.97" y="854.333">
    <point/>
   </object>
   <object id="21" name="end_lvl" x="1910" y="0" width="10" height="1085.33"/>

@@ -41,6 +41,11 @@ class Player(pygame.sprite.Sprite):
         self.jump_height = 600
         self.platform = None
 
+        # invincibility
+        self.invincible = False
+        self.invincible_timer = 0
+        self.invincible_time = 0.8
+        
         # collision
         self.collision_sprites = Collision(collision_sprites)
         self.on_surface = {'floor': False, 'left': False, 'right': False}
@@ -224,7 +229,14 @@ class Player(pygame.sprite.Sprite):
 
         # apply damage
         self.apply_attack_damage()
-
+        
+    def take_damage(self, damage):
+        if self.invincible:
+            return
+        self.health -= damage
+        self.invincible = True
+        self.invincible_timer = self.invincible_time
+        
     def apply_attack_damage(self):
         cx, cy = self.hitbox_rect.center
         radius = self.attack_radius
@@ -295,4 +307,8 @@ class Player(pygame.sprite.Sprite):
                 self.start_attack()
         self.attack = False
 
+        if self.invincible:
+            self.invincible_timer -= dt
+            if self.invincible_timer <= 0:
+                self.invincible = False
 

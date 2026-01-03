@@ -8,6 +8,7 @@ from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
 from src.ui.death_screen import GameOverMenu
 from os.path import join
+from src.entities.enemies import Runner, Shooter
 
 class Level:
     def __init__(self, tmx_map, surface, health):
@@ -15,6 +16,7 @@ class Level:
         self.game_over_menu = GameOverMenu(self.display_surface)
         self.tmx_map = tmx_map
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
+        self.trevor = None
         
         # groups
         self.moving_sprites = pygame.sprite.Group()
@@ -23,7 +25,10 @@ class Level:
         self.items = pygame.sprite.Group()
         self.gate = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
-
+        self.runner_sprites = pygame.sprite.Group()
+        self.shooter_sprites = pygame.sprite.Group()
+        self.damage_sprites = pygame.sprite.Group()
+        
         # death zone
         self.death_rects = []
         self.start_health = health
@@ -33,6 +38,7 @@ class Level:
         self.level_end_rect = None
         self.game_over = False
         self.restart = False
+        self.met_trev = False
         
         self.setup(tmx_map)
 
@@ -78,6 +84,12 @@ class Level:
             if obj.name == "Key":
                 amount = obj.properties.get("amount", 1)
                 DroppedItem( pos=(obj.x + obj.width // 2, obj.y + obj.height // 2), item_type=key_type, amount=amount, groups=(self.all_sprites, self.items))                
+            
+            # enemies
+            if obj.name == 'runner':
+                Runner((obj.x, obj.y), (self.all_sprites, self.runner_sprites, self.damage_sprites), self.collision_sprites)
+            # if obj.name == 'shooter':
+            #     Shooter((obj.x, obj.y), (self.all_sprites, self.runner_sprites), self.collision_sprites)
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
 
         # trigger
@@ -136,6 +148,16 @@ class Level:
         for item in hits:
            self.player.inventory.add(item.item_type, item.amount)
         
+        # runner hit
+        hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
+        for sprite in hits:
+            self.player.take_damage(sprite.damage)
+            if self.player.health == 0:
+                # big respawn == death => menu screen
+                self.player.health = 0
+                self.game_over = True
+                return
+
         # open gate
         for gate in self.gate: 
             gate.update(self.player)
@@ -156,8 +178,11 @@ class Level:
                     return
         
         self.moving_sprites.update(dt)
+        self.runner_sprites.update(dt)
         self.player.update(dt)
         self.health.set_health(self.player.health)
+        # if self.player.rect.colliderect(self.trevor):
+        #     self.met_trev = True
         if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
             pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
             self.level_complete = True
