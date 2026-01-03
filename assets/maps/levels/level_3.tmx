@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="120" height="68" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="26">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="120" height="68" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="27">
  <tileset firstgid="1" source="../tilesets/dirts.tsx"/>
  <tileset firstgid="19" source="../tilesets/grid.tsx"/>
  <tileset firstgid="100" source="../tilesets/platforms.tsx"/>
@@ -228,12 +228,12 @@
  <objectgroup id="4" name="block_movement">
   <object id="7" name="death" x="0" y="1082.82" width="1920" height="5"/>
   <object id="8" name="block_map" x="0" y="0" width="10" height="1085.33"/>
+  <object id="26" name="gate" x="1648.11" y="528.33" width="16" height="367"/>
  </objectgroup>
  <objectgroup id="5" name="Objects">
   <object id="10" name="Tabitha" type="Player" x="77.2727" y="206.97">
    <point/>
   </object>
-  <object id="19" name="Gate" x="1647.5" y="528.833" width="16" height="367"/>
   <object id="20" name="Boss" x="1052" y="712">
    <point/>
   </object>

@@ -1,6 +1,7 @@
 from src.settings import *
 from src.systems.timer import Timer
 from src.systems.collision import Collision
+from src.systems.inventory import Inventory
 import os
 
 class Player(pygame.sprite.Sprite):
@@ -16,7 +17,9 @@ class Player(pygame.sprite.Sprite):
         # health
         self.health = health
         self.max_health = 3
-        
+
+        # inventory
+        self.inventory = Inventory() 
         # movement
         self.pos = pos
         self.direction = vector()
