@@ -181,8 +181,10 @@ class Level:
         self.runner_sprites.update(dt)
         self.player.update(dt)
         self.health.set_health(self.player.health)
-        # if self.player.rect.colliderect(self.trevor):
-        #     self.met_trev = True
+        if self.trevor and not self.met_trev:
+            if self.player.rect.colliderect(self.trevor.rect):
+                self.met_trev = True
+                return
         if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
             pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
             self.level_complete = True
