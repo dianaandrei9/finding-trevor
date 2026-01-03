@@ -6,11 +6,13 @@ from src.systems.collider import Collider
 from src.systems.health import Health
 from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
+from src.core.death_screen import GameOverMenu
 
 class Level:
     def __init__(self, tmx_map, surface, health):
         self.display_surface = surface
-        
+        self.game_over_menu = GameOverMenu(self.display_surface)
+        self.tmx_map = tmx_map
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
         
         # groups
@@ -28,10 +30,19 @@ class Level:
         self.level_complete = False
         self.level_end_rect = None
         self.game_over = False
+        self.restart = False
         
         self.setup(tmx_map)
 
     def setup(self, tmx_map):
+        # clear 
+        self.all_sprites.empty()
+        self.collision_sprites.empty()
+        self.moving_sprites.empty()
+        self.items.empty()
+        self.gate.empty()
+        self.death_rects.clear()
+        
         # tiles
         for layer in tmx_map.layers:
             if hasattr(layer, 'name') and layer.name.startswith("terrain"):
@@ -152,3 +163,10 @@ class Level:
         self.all_sprites.draw(self.display_surface)
         self.health.empty_hearts()
         self.player.inventory.draw(self.display_surface)
+        
+        if self.game_over:
+            result = self.game_over_menu.run()
+            if result == "restart":
+                self.game_over = False
+                self.restart = True
+        return
