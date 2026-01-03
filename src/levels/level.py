@@ -4,21 +4,26 @@ from src.assets.sprites import Sprite, MovingSprite
 from src.entities.player import Player
 from src.systems.collider import Collider
 from src.systems.health import Health
+from src.systems.inventory import ItemType, DroppedItem, Key
+from src.systems.gate import Gate
 
 class Level:
     def __init__(self, tmx_map, surface, health):
         self.display_surface = surface
         
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
-
+        
         # groups
         self.moving_sprites = pygame.sprite.Group()
         self.all_sprites  = pygame.sprite.Group()
         self.collision_sprites = pygame.sprite.Group()
-
+        self.items = pygame.sprite.Group()
+        self.gate = pygame.sprite.Group()
+        
         # death zone
         self.death_rects = []
         self.start_health = health
+        
         # end lvl
         self.level_complete = False
         self.level_end_rect = None
@@ -46,14 +51,20 @@ class Level:
                     else:
                         Sprite((x * TILE_SIZE , y * TILE_SIZE), image, (self.all_sprites))
 
+        key_type = Key.key
+        key_type.load_icon()
+        
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
                 self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health)
             if obj.name == "end_lvl":
                 self.level_end_rect = pygame.Rect( obj.x, obj.y, obj.width, obj.height)
+            if obj.name == "Key":
+                amount = obj.properties.get("amount", 1)
+                DroppedItem( pos=(obj.x + obj.width // 2, obj.y + obj.height // 2), item_type=key_type, amount=amount, groups=(self.all_sprites, self.items))                
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
-        
+
         # trigger
         for obj in tmx_map.get_layer_by_name('block_movement'):
             if obj.name == "death":
@@ -61,6 +72,12 @@ class Level:
             if obj.name == "block_map":
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                 Collider(rect, self.collision_sprites)
+            if obj.name == "gate":
+                rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
+                gate = Gate(rect, key_type, pygame.image.load("assets/graphics/gate_closed.png").convert_alpha())
+                self.gate.add(gate)
+                self.all_sprites.add(gate)
+                gate.collider = Collider(rect, self.collision_sprites)
         
         # moving objects (platforms)
         if 'moving_platforms' in tmx_map.layernames:
@@ -99,6 +116,15 @@ class Level:
             camera_dx = 0 
         self.parallax.update(camera_dx)
         
+        # inventory check
+        hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
+        for item in hits:
+           self.player.inventory.add(item.item_type, item.amount)
+        
+        # open gate
+        for gate in self.gate: 
+            gate.update(self.player)
+        
         # kill zone check
         for r in self.death_rects:
             if self.player.hitbox_rect.colliderect(r):
@@ -125,3 +151,4 @@ class Level:
         self.parallax.draw(self.display_surface)
         self.all_sprites.draw(self.display_surface)
         self.health.empty_hearts()
+        self.player.inventory.draw(self.display_surface)
