@@ -28,6 +28,7 @@ class Player(pygame.sprite.Sprite):
         self.actual_dx = 0
         self.actual_dy = 0
         self.jump = False
+        self.did_jump = False
         self.jump_height = 600
         self.platform = None
 
@@ -39,6 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.timers = {
             'wall jump': Timer(300),
             'jump wait': Timer(50),
+            'fall_delay': Timer(50),
             'land': Timer(120)
         }
         
@@ -85,20 +87,20 @@ class Player(pygame.sprite.Sprite):
             self.status = "land"
             return
 
-        # Jumping upward
         if self.direction.y < 0:
-            if self.direction.x < 0:
-                self.status = "jump_left"
-            else:
-                self.status = "jump_right"
+            self.status = "jump_left" if self.direction.x < 0 else "jump_right"
             return
 
-        # Falling downward (must check NOT on floor)
+        if not self.on_surface['floor'] and (self.on_surface['left'] or self.on_surface['right']):
+            self.status = "idle"   # or a wall-slide animation later
+            return
+
+        if not self.on_surface['floor'] and self.direction.y > 0 and self.timers["fall_delay"].active:
+            self.status = "jump_left" if self.direction.x < 0 else "jump_right"
+            return
+
         if not self.on_surface['floor'] and self.direction.y > 0:
-            if self.direction.x < 0:
-                self.status = "fall_left"
-            else:
-                self.status = "fall_right"
+            self.status = "fall_left" if self.direction.x < 0 else "fall_right"
             return
 
         # Running on ground
@@ -114,7 +116,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.status == "land":
             frames = self.animations["land"]
-            speed = 12  # fast snap landing
+            speed = 3  # fast snap landing
 
             self.frame_index += speed * dt
 
@@ -133,22 +135,26 @@ class Player(pygame.sprite.Sprite):
         elif self.status in ('walk', 'walk_back'):
             speed = 10     # normal
         elif self.status in ('jump_right', 'jump_left'):
-            speed = 5
+            speed = 4
         elif self.status in ('fall_right', 'fall_left'):
-            speed = 2
+            speed = 6
         else:
             speed = 10
 
         self.frame_index += speed * dt
 
         if self.status in ('jump_right', 'jump_left'):
-            if self.frame_index >= len(frames):
-                self.frame_index = len(frames) - 1
-        else:
-            if self.frame_index >= len(frames):
-                self.frame_index = 0
+            max_jump_frames = 5  # frames 0,1,2,3,4
+
+            if self.frame_index >= max_jump_frames:
+                self.frame_index = max_jump_frames - 1  # freeze on frame 4
+
+            self.image = frames[int(self.frame_index)]
+            return
 
         # rect update
+        if self.frame_index >= len(frames):
+            self.frame_index = 0
         self.image = frames[int(self.frame_index)]
 
 
@@ -206,15 +212,25 @@ class Player(pygame.sprite.Sprite):
         self.update_timers()
         self.input()
         self.move(dt)
+
         self.on_surface, self.platform = self.collision_sprites.check_contact(self.hitbox_rect)
         self.platform_move()
+
+        if not self.on_surface['floor'] and self.direction.y > 0 and not self.jump:
+            self.did_jump = False
 
         self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'horizontal')
         self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'vertical')
 
-        
         self.rect.center = self.hitbox_rect.center
         
+        if self.did_jump and self.direction.y > 0 and not self.on_surface['floor']:
+            if not self.timers["fall_delay"].active:
+                self.timers["fall_delay"].activate()
+        else:
+            self.timers["fall_delay"].deactivate()
+
+
         just_landed = (
             self.on_surface['floor'] and
             self.direction.y == 0 and
@@ -226,6 +242,7 @@ class Player(pygame.sprite.Sprite):
             self.timers["land"].activate()
             self.status = "land"
             self.frame_index = 0
+            self.did_jump = False
 
         self.get_status()
         self.animate(dt)
@@ -234,6 +251,7 @@ class Player(pygame.sprite.Sprite):
             if self.on_surface['floor']:
                 self.direction.y = -self.jump_height
                 self.timers['jump wait'].activate()
+                self.did_jump = True
             elif any((self.on_surface['left'], self.on_surface['right'])) and not self.timers['jump wait'].active:
                 self.timers['wall jump'].activate()
                 self.direction.y = -self.jump_height
