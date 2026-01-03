@@ -22,7 +22,8 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
         self.gate = pygame.sprite.Group()
-        
+        self.enemies = pygame.sprite.Group()
+
         # death zone
         self.death_rects = []
         self.start_health = health
@@ -69,7 +70,7 @@ class Level:
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
-                self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health)
+                self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health, self.enemies)
             if obj.name == 'Trevor':
                 self.trevor = Sprite((obj.x, obj.y), pygame.image.load(join("assets", "graphics", "Trev_64x64.png")), (self.all_sprites, self.collision_sprites))
             if obj.name == "end_lvl":
