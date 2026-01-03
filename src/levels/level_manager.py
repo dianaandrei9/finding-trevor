@@ -24,7 +24,9 @@ class LevelManager:
             level.player.inventory.slot.type = self.inv_data["type"]
             level.player.inventory.slot.amount = self.inv_data["amount"]
         return level
-            
+    
+    def cutscene(self):
+        pass      
 
     def next_level(self):
         self.current_index += 1
@@ -64,7 +66,11 @@ class LevelManager:
             return
         if self.current_level.level_complete:
             self.next_level()
+            return
+        if self.current_level.met_trev:
+            self.cutscene()
         return None
+            
         
     def draw(self, dt):
         self.current_level.run(dt)
