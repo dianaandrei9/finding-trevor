@@ -19,7 +19,7 @@ class Runner(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
         self.pos = vector(self.rect.topleft)
         self.damage = 1
-        
+
         self.direction = choice((-1, 1))
         self.collision_rects = [sprite.rect for sprite in collision_sprites]
         self.speed = 200
@@ -28,6 +28,23 @@ class Runner(pygame.sprite.Sprite):
         self.frames_right = self.frames
         self.frames_left = [pygame.transform.flip(frame, True, False) for frame in self.frames]
         
+        self.max_health = 2 # 2 hits and it dead i think it ok
+        self.health = self.max_health
+        self.is_dead = False
+
+        # flashing
+        self.original_frames = self.frames
+        self.original_frames_left = self.frames_left
+        self.original_frames_right = self.frames_right
+
+        self.hit_flash_time = 0
+
+        # invincibility after hit
+        self.invincible = False
+        self.invincible_time = 300  # ms
+        self.invincible_timer = 0
+
+
     def snap_to_ground(self):
         while True:
             self.rect.y += 1
@@ -35,12 +52,47 @@ class Runner(pygame.sprite.Sprite):
                 self.rect.y -= 1
                 break
 
+    def take_damage(self, amount):
+        if self.is_dead or self.invincible:
+            return
+
+        self.health -= amount
+        self.hit_flash_time = 120  # flash white
+        self.invincible = True
+        self.invincible_timer = self.invincible_time
+
+        if self.health <= 0:
+            self.die()
+
+    def die(self):
+        self.is_dead = True
+        self.kill()   # remove from game
+
     def update(self, dt):
         # animate
         self.frame_index += ANIMATION_SPEED * dt
         frames = self.frames_left if self.direction < 0 else self.frames_right
         self.image = frames[int(self.frame_index) % len(frames)]
         
+        if self.invincible:
+            self.invincible_timer -= dt * 1000
+            if self.invincible_timer <= 0:
+                self.invincible = False
+
+        # hit flash
+        if self.hit_flash_time > 0:
+            self.hit_flash_time -= dt * 1000  # dt is seconds → convert to ms
+            # flash white
+            flash = pygame.Surface(self.image.get_size())
+            flash.fill((255, 255, 255))
+            flash.set_alpha(150)
+            self.image.blit(flash, (0, 0))
+        else:
+            # restore original frames if needed
+            self.frames = self.original_frames
+            self.frames_left = self.original_frames_left
+            self.frames_right = self.original_frames_right
+
         # move
         self.pos.x += self.direction * self.speed * dt
         self.rect.x = round(self.pos.x)

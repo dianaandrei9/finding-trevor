@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
 
         # enemies
         self.enemy_group = enemy_group
-        
+
         # inventory
         self.inventory = Inventory() 
 
@@ -41,7 +41,10 @@ class Player(pygame.sprite.Sprite):
         self.jump_height = 600
         self.platform = None
 
-        # invincibility
+        self.hit_flash_time = 0
+        self.hit_flash_duration = 60
+
+        # invincibility - idk if necessary
         self.invincible = False
         self.invincible_timer = 0
         self.invincible_time = 0.8
@@ -56,7 +59,7 @@ class Player(pygame.sprite.Sprite):
             'jump wait': Timer(50),
             'fall_delay': Timer(50),
             'land': Timer(120),
-            'attack_cooldown': Timer(300)
+            'attack_cooldown': Timer(1500)
         }
         
         # animations
@@ -234,8 +237,15 @@ class Player(pygame.sprite.Sprite):
         if self.invincible:
             return
         self.health -= damage
+        self.hit_flash_time = self.hit_flash_duration
+
         self.invincible = True
         self.invincible_timer = self.invincible_time
+
+        if self.health <= 0:
+            # death logic here
+            pass
+
         
     def apply_attack_damage(self):
         cx, cy = self.hitbox_rect.center
@@ -290,6 +300,19 @@ class Player(pygame.sprite.Sprite):
 
         self.get_status()
         self.animate(dt)
+
+        if self.hit_flash_time > 0:
+            self.hit_flash_time -= dt * 1000  # convert to ms
+
+            base_image = self.animations[self.status][int(self.frame_index)]
+            self.image = base_image.copy()
+
+            flash = pygame.Surface(self.image.get_size())
+            flash.fill((255, 255, 255))
+            flash.set_alpha(150)
+            self.image.blit(flash, (0, 0))
+        else:
+            self.image = self.animations[self.status][int(self.frame_index)]
 
         if self.jump:
             if self.on_surface['floor']:

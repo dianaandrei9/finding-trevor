@@ -87,7 +87,7 @@ class Level:
             
             # enemies
             if obj.name == 'runner':
-                Runner((obj.x, obj.y), (self.all_sprites, self.runner_sprites, self.damage_sprites), self.collision_sprites)
+                Runner((obj.x, obj.y), (self.all_sprites, self.runner_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
             # if obj.name == 'shooter':
             #     Shooter((obj.x, obj.y), (self.all_sprites, self.runner_sprites), self.collision_sprites)
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
@@ -141,7 +141,10 @@ class Level:
             camera_dx = player.actual_dx
         else:
             camera_dx = 0 
-        self.parallax.update(camera_dx)
+        
+        if not self.game_over:
+            self.parallax.update(camera_dx)
+
         
         # inventory check
         hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
@@ -151,12 +154,13 @@ class Level:
         # runner hit
         hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
         for sprite in hits:
-            self.player.take_damage(sprite.damage)
-            if self.player.health == 0:
-                # big respawn == death => menu screen
-                self.player.health = 0
-                self.game_over = True
-                return
+            if not self.player.invincible:
+                self.player.take_damage(sprite.damage)
+                if self.player.health == 0:
+                    # big respawn == death => menu screen
+                    self.player.health = 0
+                    self.game_over = True
+                    return
 
         # open gate
         for gate in self.gate: 
