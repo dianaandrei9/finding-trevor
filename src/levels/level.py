@@ -6,7 +6,7 @@ from src.systems.collider import Collider
 from src.systems.health import Health
 from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
-from src.core.death_screen import GameOverMenu
+from src.ui.death_screen import GameOverMenu
 from os.path import join
 
 class Level:

@@ -3,7 +3,7 @@ from src.levels.level import Level
 from src.levels.level_manager import LevelManager
 from pytmx.util_pygame import load_pygame
 from os.path import join
-from src.core.menu import MainMenu
+from src.ui.menu import MainMenu
 from src.levels.level import Level
 
 class Game:
