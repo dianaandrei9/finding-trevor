@@ -50,9 +50,7 @@ class Inventory:
     def draw(self, surface):
         sw, sh = surface.get_size()
 
-        slot_rect = self.slot_bg.get_rect(
-            topright=(sw - 55, 30)
-        )
+        slot_rect = self.slot_bg.get_rect(topright=(sw - 55, 30))
 
         # draw slot frame
         surface.blit(self.slot_bg, slot_rect)
@@ -60,15 +58,11 @@ class Inventory:
         # draw item icon ON TOP
         if self.slot.type:
             icon = self.slot.type.icon
-
-            # optional scale so it fits nicely
-            icon = pygame.transform.smoothscale(icon, (24, 24))
-
             icon_rect = icon.get_rect(center=slot_rect.center)
             surface.blit(icon, icon_rect)
 
 class DroppedItem(pygame.sprite.Sprite):
-    def __init__(self, pos, item_type, amount=1, groups=()):
+    def __init__(self, pos, item_type, amount, groups):
         super().__init__(groups)
         self.item_type = item_type
         self.amount = amount

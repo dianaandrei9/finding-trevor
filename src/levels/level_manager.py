@@ -56,9 +56,12 @@ class LevelManager:
 
     def update(self, dt):
         self.current_level.update(dt)
+        self.current_level.run(dt)
         if getattr(self.current_level, "game_over", False):
+            return
+        if getattr(self.current_level, "restart", False):
             self.go_to_first_level()
-            return "game_over"
+            return
         if self.current_level.level_complete:
             self.next_level()
         return None
