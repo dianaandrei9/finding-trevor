@@ -26,6 +26,7 @@ class LevelManager:
         return level
     
     def cutscene(self):
+        print('cutsecene')
         pass      
 
     def next_level(self):
