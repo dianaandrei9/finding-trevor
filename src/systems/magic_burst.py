@@ -5,7 +5,7 @@ class MagicBurst(pygame.sprite.Sprite):
         super().__init__(groups)
 
         self.radius = radius
-        self.lifetime = 200  # total duration (same unit as dt)
+        self.lifetime = 1  # total duration (same unit as dt)
         self.elapsed = 0
 
         # base surface we'll fade over time

@@ -9,7 +9,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites, health, enemy_group):
         super().__init__(groups)
         self.image = pygame.image.load("assets/sprites/Tabitha-fixed.png").convert_alpha()
-        
+        self.group = groups
         # rect
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox_rect = self.rect.inflate(-5, 0)
@@ -21,8 +21,8 @@ class Player(pygame.sprite.Sprite):
 
         # attack
         self.attack = False
-        self.attack_radius = 64 * 3
-
+        self.attack_radius = 64 * 5
+        
         # enemies
         self.enemy_group = enemy_group
 
@@ -63,7 +63,7 @@ class Player(pygame.sprite.Sprite):
             'jump wait': Timer(50),
             'fall_delay': Timer(50),
             'land': Timer(120),
-            'attack_cooldown': Timer(1500)
+            'attack_cooldown': Timer(900)
         }
         
         # animations
@@ -284,7 +284,7 @@ class Player(pygame.sprite.Sprite):
         self.timers['attack_cooldown'].activate()
 
         # spawn visual effect
-        MagicBurst(self.hitbox_rect.center, self.attack_radius, self.groups())
+        MagicBurst(self.hitbox_rect.center, self.attack_radius, (self.group[0], self.group[1]))
 
         # apply damage
         self.apply_attack_damage()

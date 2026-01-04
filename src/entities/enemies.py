@@ -120,19 +120,19 @@ class Boss(pygame.sprite.Sprite):
         self.image = self.frames[self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
         self.pos = vector(self.rect.topleft)
-        self.damage = 2
+        self.damage = 0
         
         # throws
         self.max_attacks = 3    # max throws before getting tired
         self.attack_count = 0
-        self.tired_timer = Timer(5000)  # Boss rests 5 seconds after being tired
+        self.tired_timer = Timer(6000)  # Boss rests 6 seconds after being tired
         self.tired_timer.active = False
         self.is_tired = False
 
         self.collision_rects = [sprite.rect for sprite in collision_sprites]
         self.snap_to_ground()
 
-        self.max_health = 6 # 4 hits and it dead i think it ok
+        self.max_health = 6 # 6 hits and it dead i think it ok
         self.health = self.max_health
         self.is_dead = False
 
@@ -150,7 +150,7 @@ class Boss(pygame.sprite.Sprite):
 
         # invincibility after hit
         self.invincible = False
-        self.invincible_time = 300  # ms
+        self.invincible_time = 200  # ms
         self.invincible_timer = 0
 
     def snap_to_ground(self):
@@ -174,6 +174,8 @@ class Boss(pygame.sprite.Sprite):
 
     def die(self):
         self.is_dead = True
+        for orb in self.orbs_group.sprites():
+            orb.kill()
         self.kill()   # remove from game
     
     # boss starts shooting when player in range 
@@ -197,20 +199,20 @@ class Boss(pygame.sprite.Sprite):
                 self.invincible = False
         
         # sky orbs
-        # if player and self.player_in_range(player):
-        #     if not self.sky_orbs_timer.active:
-        #         self.summon_sky_orbs()
-        #         self.sky_orbs_timer.activate()
+        if player and self.player_in_range(player):
+            if not self.sky_orbs_timer.active:
+                self.summon_sky_orbs()
+                self.sky_orbs_timer.activate()
 
         # attack
-        # if player and self.player_in_range(player) and not self.is_tired:
-        #     if not self.attack_timer.active:
-        #         self.summon_orbs()
-        #         self.attack_timer.activate()
-        #         self.attack_count += 1
-        #         if self.attack_count >= self.max_attacks:
-        #             self.is_tired = True
-        #             self.tired_timer.activate()
+        if player and self.player_in_range(player) and not self.is_tired:
+            if not self.attack_timer.active:
+                self.summon_orbs()
+                self.attack_timer.activate()
+                self.attack_count += 1
+                if self.attack_count >= self.max_attacks:
+                    self.is_tired = True
+                    self.tired_timer.activate()
 
         # handle tired
         if self.is_tired:
@@ -231,15 +233,29 @@ class Boss(pygame.sprite.Sprite):
 
         # hit flash
         if self.hit_flash_time > 0:
-            self.hit_flash_time -= dt * 1000  # dt is seconds → convert to ms
-            # flash white
-            flash = pygame.Surface(self.image.get_size())
-            flash.fill((255, 255, 255))
+            self.hit_flash_time -= dt * 1000
+            base_image = self.original_frames[int(self.frame_index) % len(self.original_frames)].copy()
+            
+            # apply gray overlay if tired
+            if self.is_tired:
+                gray_surf = pygame.Surface(base_image.get_size(), pygame.SRCALPHA)
+                gray_surf.fill((100,100,100,80))
+                base_image.blit(gray_surf, (0,0))
+            
+            flash = pygame.Surface(base_image.get_size())
+            flash.fill((255,255,255))
             flash.set_alpha(150)
-            self.image.blit(flash, (0, 0))
+            base_image.blit(flash,(0,0))
+            
+            self.image = base_image
         else:
-            # restore original frames if needed
-            self.frames = self.original_frames
+            # restore normal frame (with tired gray if needed)
+            base_image = self.original_frames[int(self.frame_index) % len(self.original_frames)].copy()
+            if self.is_tired:
+                gray_surf = pygame.Surface(base_image.get_size(), pygame.SRCALPHA)
+                gray_surf.fill((100,100,100,80))
+                base_image.blit(gray_surf, (0,0))
+            self.image = base_image
 
     def summon_orbs(self):
         directions = [
@@ -253,7 +269,7 @@ class Boss(pygame.sprite.Sprite):
         ]
 
         for dir in directions:
-            Orb(self.rect.center, (self.all_sprites, self.orbs_group), dir, 300, self.player_group)
+            Orb(self.rect.center, (self.all_sprites, self.orbs_group), dir, 200, self.player_group)
     
     def summon_sky_orbs(self):
         screen_width = self.display_surface.get_width()
@@ -261,7 +277,7 @@ class Boss(pygame.sprite.Sprite):
         spacing = screen_width / (num_orbs - 1)
         for i in range(num_orbs):
             pos = vector(i * spacing, 0)
-            Orb(pos, (self.all_sprites, self.orbs_group), vector(0, 1), 200, self.player_group)
+            Orb(pos, (self.all_sprites, self.orbs_group), vector(0, 1), 150, self.player_group)
 
 class Orb(pygame.sprite.Sprite):
     def __init__(self, pos, groups, direction, speed, player_group):

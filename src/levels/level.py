@@ -1,3 +1,4 @@
+from os.path import join
 from src.settings import *
 from src.core.parallax_att import ParallaxBackground
 from src.assets.sprites import Sprite, MovingSprite
@@ -7,7 +8,6 @@ from src.systems.health import Health
 from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
 from src.ui.death_screen import GameOverMenu
-from os.path import join
 from src.entities.enemies import Runner, Boss
 
 class Level:
@@ -88,9 +88,11 @@ class Level:
             
             # enemies
             if obj.name == 'runner':
-                Runner((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
+                runner = Runner((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
+                # self.player.enemy_grseoup.add(runner)
             if obj.name == 'Boss':
-                Boss((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites, self.orbs_group, self.player_group ,self.display_surface)
+                boss = Boss((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites, self.orbs_group, self.player_group ,self.display_surface)
+                # self.player.enemy_group.add(boss)
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
 
         # trigger
@@ -181,23 +183,20 @@ class Level:
                     return
         
         self.moving_sprites.update(dt)
-        self.player.update(dt)
+        self.player_group.update(dt)
         self.health.set_health(self.player.health)
-
         if self.trevor and not self.met_trev:
             if self.player.rect.colliderect(self.trevor.rect):
                 self.met_trev = True
                 return
-
-        self.moving_sprites.update(dt)
         self.orbs_group.update(dt)
         if self.player.health == 0:
             self.game_over = True
             return
         for enemy in self.enemies:
             enemy.update(dt, self.player)
-        self.player.update(dt)
-        self.health.set_health(self.player.health)
+        # self.player.update(dt)
+        # self.health.set_health(self.player.health)
         if self.trevor and not self.met_trev:
             if self.player.rect.colliderect(self.trevor.rect):
                 self.met_trev = True
