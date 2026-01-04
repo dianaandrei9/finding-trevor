@@ -195,8 +195,6 @@ class Level:
             return
         for enemy in self.enemies:
             enemy.update(dt, self.player)
-        # self.player.update(dt)
-        # self.health.set_health(self.player.health)
         if self.trevor and not self.met_trev:
             if self.player.rect.colliderect(self.trevor.rect):
                 self.met_trev = True
@@ -212,8 +210,10 @@ class Level:
         self.player.inventory.draw(self.display_surface)
         
         if self.game_over:
+            self.player.block_input = True
             result = self.game_over_menu.run()
             if result == "restart":
+                self.player.block_input = False
                 self.game_over = False
                 self.restart = True
         return

@@ -229,6 +229,7 @@
   <object id="7" name="death" x="0" y="1082.82" width="1920" height="5"/>
   <object id="8" name="block_map" x="0" y="0" width="10" height="1085.33"/>
   <object id="26" name="gate" x="1648.11" y="528.33" width="16" height="367"/>
+  <object id="21" name="block_map" x="1910" y="0" width="10" height="1085.33"/>
  </objectgroup>
  <objectgroup id="5" name="Objects">
   <object id="10" name="Tabitha" type="Player" x="77.2727" y="206.97">

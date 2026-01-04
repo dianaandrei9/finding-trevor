@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.inventory = Inventory() 
 
         # movement
+        self.block_input = False
         self.pos = pos
         self.direction = vector()
         self.speed = 300
@@ -38,7 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.actual_dy = 0
         self.jump = False
         self.did_jump = False
-        self.jump_height = 700
+        self.jump_height = 600
         self.platform = None
 
         self.hit_flash_time = 0
@@ -315,8 +316,9 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.old_rect = self.hitbox_rect.copy()
         self.update_timers()
-        self.input()
-        self.move(dt)
+        if not self.block_input:
+            self.input()
+            self.move(dt)
 
         self.on_surface, self.platform = self.collision_sprites.check_contact(self.hitbox_rect)
         self.platform_move()
@@ -352,7 +354,7 @@ class Player(pygame.sprite.Sprite):
         self.get_status()
         self.animate(dt)
 
-        if self.hit_flash_time > 0:
+        if self.hit_flash_time > 0 and not self.block_input:
             self.hit_flash_time -= dt * 1000  # convert to ms
 
             base_image = self.image.copy()
