@@ -8,7 +8,7 @@ from src.systems.inventory import ItemType, DroppedItem, Key
 from src.systems.gate import Gate
 from src.ui.death_screen import GameOverMenu
 from os.path import join
-from src.entities.enemies import Runner, Shooter
+from src.entities.enemies import Runner, Boss
 
 class Level:
     def __init__(self, tmx_map, surface, health):
@@ -25,9 +25,10 @@ class Level:
         self.items = pygame.sprite.Group()
         self.gate = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
-        self.runner_sprites = pygame.sprite.Group()
-        self.shooter_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
+        self.orbs_group = pygame.sprite.Group()
+        self.player_group = pygame.sprite.Group()
+
         
         # death zone
         self.death_rects = []
@@ -76,7 +77,7 @@ class Level:
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
-                self.player = Player((obj.x, obj.y), self.all_sprites, self.collision_sprites, self.start_health, self.enemies)
+                self.player = Player((obj.x, obj.y), (self.all_sprites, self.player_group), self.collision_sprites, self.start_health, self.enemies)
             if obj.name == 'Trevor':
                 self.trevor = Sprite((obj.x, obj.y), pygame.image.load(join("assets", "graphics", "Trev_64x64.png")), (self.all_sprites, self.collision_sprites))
             if obj.name == "end_lvl":
@@ -87,9 +88,9 @@ class Level:
             
             # enemies
             if obj.name == 'runner':
-                Runner((obj.x, obj.y), (self.all_sprites, self.runner_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
-            # if obj.name == 'shooter':
-            #     Shooter((obj.x, obj.y), (self.all_sprites, self.runner_sprites), self.collision_sprites)
+                Runner((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
+            if obj.name == 'Boss':
+                Boss((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites, self.orbs_group, self.player_group ,self.display_surface)
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
 
         # trigger
@@ -144,54 +145,66 @@ class Level:
         
         if not self.game_over:
             self.parallax.update(camera_dx)
-
-            # inventory check
-            hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
-            for item in hits:
-                self.player.inventory.add(item.item_type, item.amount)
             
-            # runner hit
-            hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
-            for sprite in hits:
-                if not self.player.invincible:
-                    self.player.take_damage(sprite.damage)
-                    if self.player.health == 0:
-                        # big respawn == death => menu screen
-                        self.player.health = 0
-                        self.game_over = True
-                        return
-
-            # open gate
-            for gate in self.gate: 
-                gate.update(self.player)
-            
-            # kill zone check
-            for r in self.death_rects:
-                if self.player.hitbox_rect.colliderect(r):
-                    if self.player.health > 1:
-                        # small respawn
-                        self.player.health -= 1
-                        self.player.rect.topleft = self.player.pos
-                        self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
-                        self.player.direction.y = 0
-                    else:
-                        # big respawn == death => menu screen
-                        self.player.health = 0
-                        self.game_over = True
-                        return
-            
-            self.moving_sprites.update(dt)
-            self.runner_sprites.update(dt)
-            self.player.update(dt)
-            self.health.set_health(self.player.health)
-
-            if self.trevor and not self.met_trev:
-                if self.player.rect.colliderect(self.trevor.rect):
-                    self.met_trev = True
+        # inventory check
+        hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
+        for item in hits:
+           self.player.inventory.add(item.item_type, item.amount)
+        
+        # hits
+        damage_hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
+        for sprite in damage_hits:
+            if not self.player.invincible:
+                self.player.take_damage(sprite.damage)
+                if self.player.health == 0:
+                    # big respawn == death => menu screen
+                    self.game_over = True
                     return
-            if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
-                pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
-                self.level_complete = True
+            
+        # open gate
+        for gate in self.gate: 
+            gate.update(self.player)
+        
+        # kill zone check
+        for r in self.death_rects:
+            if self.player.hitbox_rect.colliderect(r):
+                if self.player.health > 1:
+                    # small respawn
+                    self.player.health -= 1
+                    self.player.rect.topleft = self.player.pos
+                    self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
+                    self.player.direction.y = 0
+                else:
+                    # big respawn == death => menu screen
+                    self.player.health = 0
+                    self.game_over = True
+                    return
+        
+        self.moving_sprites.update(dt)
+        self.player.update(dt)
+        self.health.set_health(self.player.health)
+
+        if self.trevor and not self.met_trev:
+            if self.player.rect.colliderect(self.trevor.rect):
+                self.met_trev = True
+                return
+
+        self.moving_sprites.update(dt)
+        self.orbs_group.update(dt)
+        if self.player.health == 0:
+            self.game_over = True
+            return
+        for enemy in self.enemies:
+            enemy.update(dt, self.player)
+        self.player.update(dt)
+        self.health.set_health(self.player.health)
+        if self.trevor and not self.met_trev:
+            if self.player.rect.colliderect(self.trevor.rect):
+                self.met_trev = True
+                return
+        if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
+            pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
+            self.level_complete = True
         
     def run(self, dt):
         self.parallax.draw(self.display_surface)

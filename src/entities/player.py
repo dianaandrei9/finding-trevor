@@ -1,9 +1,9 @@
+import os
 from src.settings import *
 from src.systems.timer import Timer
 from src.systems.collision import Collision
 from src.systems.inventory import Inventory
 from src.systems.magic_burst import MagicBurst
-import os
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites, health, enemy_group):
@@ -38,7 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.actual_dy = 0
         self.jump = False
         self.did_jump = False
-        self.jump_height = 600
+        self.jump_height = 700
         self.platform = None
 
         self.hit_flash_time = 0
@@ -293,15 +293,10 @@ class Player(pygame.sprite.Sprite):
         if self.invincible:
             return
         self.health -= damage
+        self.health = max(0, self.health)
         self.hit_flash_time = self.hit_flash_duration
-
         self.invincible = True
         self.invincible_timer = self.invincible_time
-
-        if self.health <= 0:
-            # death logic here
-            pass
-
         
     def apply_attack_damage(self):
         cx, cy = self.hitbox_rect.center
@@ -378,6 +373,11 @@ class Player(pygame.sprite.Sprite):
                 self.direction.y = -self.jump_height
                 self.direction.x = 1 if self.on_surface['left'] else -1
             self.jump = False
+
+        if self.attack and not self.timers['attack_cooldown'].active:
+            if self.on_surface['floor']:
+                self.start_attack()
+        self.attack = False
 
         if self.invincible:
             self.invincible_timer -= dt
