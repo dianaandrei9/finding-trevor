@@ -1,15 +1,15 @@
+import os
 from src.settings import *
 from src.systems.timer import Timer
 from src.systems.collision import Collision
 from src.systems.inventory import Inventory
 from src.systems.magic_burst import MagicBurst
-import os
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites, health, enemy_group):
         super().__init__(groups)
         self.image = pygame.image.load("assets/sprites/Tabitha-fixed.png").convert_alpha()
-        
+        self.group = groups
         # rect
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox_rect = self.rect.inflate(-5, 0)
@@ -21,8 +21,8 @@ class Player(pygame.sprite.Sprite):
 
         # attack
         self.attack = False
-        self.attack_radius = 64 * 3
-
+        self.attack_radius = 64 * 5
+        
         # enemies
         self.enemy_group = enemy_group
 
@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.inventory = Inventory() 
 
         # movement
+        self.block_input = False
         self.pos = pos
         self.direction = vector()
         self.speed = 300
@@ -63,7 +64,7 @@ class Player(pygame.sprite.Sprite):
             'jump wait': Timer(50),
             'fall_delay': Timer(50),
             'land': Timer(120),
-            'attack_cooldown': Timer(1500)
+            'attack_cooldown': Timer(900)
         }
         
         # animations
@@ -284,7 +285,7 @@ class Player(pygame.sprite.Sprite):
         self.timers['attack_cooldown'].activate()
 
         # spawn visual effect
-        MagicBurst(self.hitbox_rect.center, self.attack_radius, self.groups())
+        MagicBurst(self.hitbox_rect.center, self.attack_radius, (self.group[0], self.group[1]))
 
         # apply damage
         self.apply_attack_damage()
@@ -293,15 +294,10 @@ class Player(pygame.sprite.Sprite):
         if self.invincible:
             return
         self.health -= damage
+        self.health = max(0, self.health)
         self.hit_flash_time = self.hit_flash_duration
-
         self.invincible = True
         self.invincible_timer = self.invincible_time
-
-        if self.health <= 0:
-            # death logic here
-            pass
-
         
     def apply_attack_damage(self):
         cx, cy = self.hitbox_rect.center
@@ -320,8 +316,9 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.old_rect = self.hitbox_rect.copy()
         self.update_timers()
-        self.input()
-        self.move(dt)
+        if not self.block_input:
+            self.input()
+            self.move(dt)
 
         self.on_surface, self.platform = self.collision_sprites.check_contact(self.hitbox_rect)
         self.platform_move()
@@ -357,7 +354,7 @@ class Player(pygame.sprite.Sprite):
         self.get_status()
         self.animate(dt)
 
-        if self.hit_flash_time > 0:
+        if self.hit_flash_time > 0 and not self.block_input:
             self.hit_flash_time -= dt * 1000  # convert to ms
 
             base_image = self.image.copy()
@@ -378,6 +375,11 @@ class Player(pygame.sprite.Sprite):
                 self.direction.y = -self.jump_height
                 self.direction.x = 1 if self.on_surface['left'] else -1
             self.jump = False
+
+        if self.attack and not self.timers['attack_cooldown'].active:
+            if self.on_surface['floor']:
+                self.start_attack()
+        self.attack = False
 
         if self.invincible:
             self.invincible_timer -= dt
