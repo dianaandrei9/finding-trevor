@@ -145,53 +145,53 @@ class Level:
         if not self.game_over:
             self.parallax.update(camera_dx)
 
-        
-        # inventory check
-        hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
-        for item in hits:
-           self.player.inventory.add(item.item_type, item.amount)
-        
-        # runner hit
-        hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
-        for sprite in hits:
-            if not self.player.invincible:
-                self.player.take_damage(sprite.damage)
-                if self.player.health == 0:
-                    # big respawn == death => menu screen
-                    self.player.health = 0
-                    self.game_over = True
-                    return
+            # inventory check
+            hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
+            for item in hits:
+                self.player.inventory.add(item.item_type, item.amount)
+            
+            # runner hit
+            hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
+            for sprite in hits:
+                if not self.player.invincible:
+                    self.player.take_damage(sprite.damage)
+                    if self.player.health == 0:
+                        # big respawn == death => menu screen
+                        self.player.health = 0
+                        self.game_over = True
+                        return
 
-        # open gate
-        for gate in self.gate: 
-            gate.update(self.player)
-        
-        # kill zone check
-        for r in self.death_rects:
-            if self.player.hitbox_rect.colliderect(r):
-                if self.player.health > 1:
-                    # small respawn
-                    self.player.health -= 1
-                    self.player.rect.topleft = self.player.pos
-                    self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
-                    self.player.direction.y = 0
-                else:
-                    # big respawn == death => menu screen
-                    self.player.health = 0
-                    self.game_over = True
+            # open gate
+            for gate in self.gate: 
+                gate.update(self.player)
+            
+            # kill zone check
+            for r in self.death_rects:
+                if self.player.hitbox_rect.colliderect(r):
+                    if self.player.health > 1:
+                        # small respawn
+                        self.player.health -= 1
+                        self.player.rect.topleft = self.player.pos
+                        self.player.hitbox_rect = self.player.rect.inflate(-5, 0)
+                        self.player.direction.y = 0
+                    else:
+                        # big respawn == death => menu screen
+                        self.player.health = 0
+                        self.game_over = True
+                        return
+            
+            self.moving_sprites.update(dt)
+            self.runner_sprites.update(dt)
+            self.player.update(dt)
+            self.health.set_health(self.player.health)
+
+            if self.trevor and not self.met_trev:
+                if self.player.rect.colliderect(self.trevor.rect):
+                    self.met_trev = True
                     return
-        
-        self.moving_sprites.update(dt)
-        self.runner_sprites.update(dt)
-        self.player.update(dt)
-        self.health.set_health(self.player.health)
-        if self.trevor and not self.met_trev:
-            if self.player.rect.colliderect(self.trevor.rect):
-                self.met_trev = True
-                return
-        if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
-            pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
-            self.level_complete = True
+            if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
+                pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
+                self.level_complete = True
         
     def run(self, dt):
         self.parallax.draw(self.display_surface)

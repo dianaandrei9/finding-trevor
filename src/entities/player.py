@@ -44,6 +44,10 @@ class Player(pygame.sprite.Sprite):
         self.hit_flash_time = 0
         self.hit_flash_duration = 60
 
+        self.attack_time = 300  # ms
+        self.attack_timer = 0
+        self.attacking = False
+
         # invincibility - idk if necessary
         self.invincible = False
         self.invincible_timer = 0
@@ -70,7 +74,11 @@ class Player(pygame.sprite.Sprite):
             'jump_right': [],
             'jump_left': [],
             'fall_right': [],
-            'fall_left': []
+            'fall_left': [],
+            'land': [],
+            'wall_left': [],
+            'wall_right': [],
+            'attack': []
         }
 
         self.status = 'idle'
@@ -85,7 +93,10 @@ class Player(pygame.sprite.Sprite):
         self.animations['jump_left'] = self.load_frames("assets/sprites/tabitha_jump_back_animation")
         self.animations['fall_right'] = self.load_frames("assets/sprites/tabitha_fall_animation")
         self.animations['fall_left'] = self.load_frames("assets/sprites/tabitha_fall_back_animation")
-        self.animations["land"] = self.load_frames("assets/sprites/tabitha_land_animation")
+        self.animations['land'] = self.load_frames("assets/sprites/tabitha_land_animation")
+        self.animations['wall_right'] = self.load_frames("assets/sprites/tabitha_wallride")
+        self.animations['wall_left'] = self.load_frames("assets/sprites/tabitha_wallride_back")
+        self.animations['attack'] = self.load_frames("assets/sprites/tabitha_attack")
 
         # start with first idle frame
         self.image = self.animations['idle'][0]
@@ -100,23 +111,38 @@ class Player(pygame.sprite.Sprite):
 
     def get_status(self):
 
-        # Landing - overwrites all
+        # Landing overrides everything
         if self.timers["land"].active:
             self.status = "land"
             return
 
+        # attack override
+        if self.attacking:
+            self.status = "attack"
+            return
+
+        # WALL RIDE
+        if not self.on_surface['floor'] and (self.on_surface['left'] or self.on_surface['right']):
+            if self.status not in ("wall_right", "wall_left"):
+                self.frame_index = 0
+
+            if self.on_surface["left"]:
+                self.status = "wall_left"
+            else:
+                self.status = "wall_right"
+            return
+
+        # Jumping upward
         if self.direction.y < 0:
             self.status = "jump_left" if self.direction.x < 0 else "jump_right"
             return
 
-        if not self.on_surface['floor'] and (self.on_surface['left'] or self.on_surface['right']):
-            self.status = "idle"   # or a wall-slide animation later
-            return
-
+        # Fall delay (still using jump anim)
         if not self.on_surface['floor'] and self.direction.y > 0 and self.timers["fall_delay"].active:
             self.status = "jump_left" if self.direction.x < 0 else "jump_right"
             return
 
+        # Falling normally
         if not self.on_surface['floor'] and self.direction.y > 0:
             self.status = "fall_left" if self.direction.x < 0 else "fall_right"
             return
@@ -131,7 +157,6 @@ class Player(pygame.sprite.Sprite):
 
 
     def animate(self, dt):
-
         if self.status == "land":
             frames = self.animations["land"]
             speed = 3  # fast snap landing
@@ -143,7 +168,31 @@ class Player(pygame.sprite.Sprite):
                 self.frame_index = len(frames) - 1
 
             self.image = frames[int(self.frame_index)]
+            self.rect.midbottom = self.hitbox_rect.midbottom
             return 
+
+        if self.status == "attack":
+            frame = self.animations["attack"][0]
+
+            # flip depending on direction
+            if self.direction.x < 0:
+                frame = pygame.transform.flip(frame, True, False)
+
+            self.image = frame
+            self.rect.midbottom = self.hitbox_rect.midbottom
+            return
+
+        if self.status == "wall_right":
+            frame = self.animations["wall_right"][0]
+            self.image = frame
+            self.rect.midbottom = self.hitbox_rect.midbottom
+            return
+
+        if self.status == "wall_left":
+            frame = self.animations["wall_left"][0]
+            self.image = frame
+            self.rect.midbottom = self.hitbox_rect.midbottom
+            return
 
         frames = self.animations[self.status]
 
@@ -173,12 +222,15 @@ class Player(pygame.sprite.Sprite):
         # rect update
         if self.frame_index >= len(frames):
             self.frame_index = 0
+
         self.image = frames[int(self.frame_index)]
+        self.rect.midbottom = self.hitbox_rect.midbottom
 
 
     def input(self):
         keys = pygame.key.get_pressed()
         input_vector = vector(0, 0)
+
         if not self.timers['wall jump'].active:
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 input_vector.x += 1
@@ -189,11 +241,15 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_SPACE]:
             self.jump = True
-        
-        if keys[pygame.K_x]:
-            self.attack = True
 
-            
+        # NEW ATTACK SYSTEM ONLY
+        if keys[pygame.K_x] and not self.attacking and not self.timers['attack_cooldown'].active:
+            self.attacking = True
+            self.attack_timer = self.attack_time
+            self.status = "attack"
+            self.start_attack()   # spawn effect + damage
+
+
     def move(self, dt):
         # horizontal
         old_x = self.hitbox_rect.x
@@ -304,15 +360,13 @@ class Player(pygame.sprite.Sprite):
         if self.hit_flash_time > 0:
             self.hit_flash_time -= dt * 1000  # convert to ms
 
-            base_image = self.animations[self.status][int(self.frame_index)]
-            self.image = base_image.copy()
+            base_image = self.image.copy()
 
             flash = pygame.Surface(self.image.get_size())
             flash.fill((255, 255, 255))
             flash.set_alpha(150)
-            self.image.blit(flash, (0, 0))
-        else:
-            self.image = self.animations[self.status][int(self.frame_index)]
+            base_image.blit(flash, (0, 0))
+            self.image = base_image
 
         if self.jump:
             if self.on_surface['floor']:
@@ -325,13 +379,13 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = 1 if self.on_surface['left'] else -1
             self.jump = False
 
-        if self.attack and not self.timers['attack_cooldown'].active:
-            if self.on_surface['floor']:   # ⭐ only attack on ground
-                self.start_attack()
-        self.attack = False
-
         if self.invincible:
             self.invincible_timer -= dt
             if self.invincible_timer <= 0:
                 self.invincible = False
+
+        if self.attacking:
+            self.attack_timer -= dt * 1000
+            if self.attack_timer <= 0:
+                self.attacking = False
 

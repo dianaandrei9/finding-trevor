@@ -83,15 +83,16 @@ class Runner(pygame.sprite.Sprite):
         if self.hit_flash_time > 0:
             self.hit_flash_time -= dt * 1000  # dt is seconds → convert to ms
             # flash white
+            base_image = frames[int(self.frame_index) % len(frames)]
+            self.image = base_image.copy()
+
             flash = pygame.Surface(self.image.get_size())
             flash.fill((255, 255, 255))
             flash.set_alpha(150)
             self.image.blit(flash, (0, 0))
         else:
             # restore original frames if needed
-            self.frames = self.original_frames
-            self.frames_left = self.original_frames_left
-            self.frames_right = self.original_frames_right
+            self.image = frames[int(self.frame_index) % len(frames)]
 
         # move
         self.pos.x += self.direction * self.speed * dt

@@ -12,7 +12,7 @@ class MagicBurst(pygame.sprite.Sprite):
         self.base_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(
             self.base_surface,
-            (150, 200, 255, 255),  # full alpha
+            (200, 255, 220, 180),  # full alpha
             (radius, radius),
             radius,
             width=4
