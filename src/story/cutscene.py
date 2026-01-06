@@ -90,7 +90,12 @@ class Cutscene(pygame.sprite.Sprite):
         self.screen.blit(self.image, (0, 0))
         
         # speech bubble
-        bubble_rect = pygame.Rect(120, 340, 570, 140)
+        screen_rect = self.screen.get_rect()
+
+        bubble_rect = pygame.Rect(0, 0, 570, 140)
+        bubble_rect.midbottom = screen_rect.midbottom
+        bubble_rect.y -= 40   # lift it slightly above the bottom
+
         pygame.draw.rect(self.screen, (10, 11, 23), bubble_rect, border_radius=8)
         pygame.draw.rect(self.screen, (255, 255, 255), bubble_rect, 3, border_radius=8)
 
