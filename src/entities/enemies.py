@@ -71,7 +71,7 @@ class Runner(pygame.sprite.Sprite):
 
     def update(self, dt, player=None):
         # animate
-        self.frame_index += ANIMATION_SPEED * dt
+        self.frame_index += RUNNER_ANIMATION_SPEED * dt
         frames = self.frames_left if self.direction < 0 else self.frames_right
         self.image = frames[int(self.frame_index) % len(frames)]
 
@@ -189,7 +189,7 @@ class Boss(pygame.sprite.Sprite):
         # animate
         self.sky_orbs_timer.update()
         self.attack_timer.update()
-        self.frame_index += ANIMATION_SPEED * dt
+        self.frame_index += BOSS_ANIMATION_SPEED * dt
         frames = self.frames
         self.image = frames[int(self.frame_index) % len(frames)]
 
