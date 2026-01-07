@@ -24,6 +24,7 @@ CREDITS = [
             "",
             "WRITERS .......... ANDREI Diana, FASUI Catalina-Andreea",
             "ARTWORK & ANIMATION .......... FASUI Catalina-Andreea",
+            "LEVEL DESIGN .......... ANDREI Diana",
             "PRODUCERS .......... ANDREI Diana, FASUI Catalina-Andreea",
             "",
             "",
