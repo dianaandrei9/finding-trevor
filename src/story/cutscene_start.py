@@ -10,7 +10,7 @@ def import_folder(*path):
             frames.append(pygame.image.load(full_path).convert_alpha())
     return frames
 
-class Cutscene(pygame.sprite.Sprite):
+class StartCutscene(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
         self.screen = screen
@@ -26,7 +26,7 @@ class Cutscene(pygame.sprite.Sprite):
         # text
         self.text = (
             "I haven't seen my pet familiar, Trevor, all morning "
-            "but I'm pretty sure I know who has him. Let's get him back."
+            "but I'm pretty sure I know who stole him. Let's get him back."
         )
         self.text_start_frame = 0
         self.text_end_frame = 17

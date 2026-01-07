@@ -4,8 +4,8 @@ from src.levels.level_manager import LevelManager
 from pytmx.util_pygame import load_pygame
 from os.path import join
 from src.ui.menu import MainMenu
-from src.story.cutscene import Cutscene
-from src.levels.level import Level
+from src.story.cutscene_start import StartCutscene
+from src.story.cutscene_end import EndCutscene
 
 class Game:
     def __init__(self):
@@ -29,7 +29,7 @@ class Game:
         self.running = True
 
         self.state = "menu"
-        self.cutscene = Cutscene(self.screen)
+        self.cutscene = StartCutscene(self.screen)
 
         # MENU
         self.menu = MainMenu(self.screen)
@@ -68,6 +68,20 @@ class Game:
                 pygame.display.update()
                 continue
 
+            # END CUTSCENE STATE
+            if self.state == "end_cutscene":
+                self.cutscene.update(dt)
+                self.cutscene.draw()
+
+                # when end cutscene finishes → quit game
+                if self.cutscene.end:
+                    pygame.quit()
+                    sys.exit()
+
+                self.present()
+                pygame.display.update()
+                continue
+
             # GAME STATE
             if self.state == "game":
                 result = self.level_manager.update(dt)
@@ -75,6 +89,11 @@ class Game:
                 if result == "game_over":
                     self.state = "menu"
                     continue
+                if result == "end_cutscene":
+                    self.cutscene = EndCutscene(self.screen)
+                    self.state = "end_cutscene"
+                    continue
+
             self.present()
             pygame.display.update()
 

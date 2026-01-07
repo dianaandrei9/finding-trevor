@@ -26,8 +26,7 @@ class LevelManager:
         return level
     
     def cutscene(self):
-        print('cutsecene')
-        pass      
+        return "end_cutscene"  
 
     def next_level(self):
         self.current_index += 1
@@ -69,7 +68,7 @@ class LevelManager:
             self.next_level()
             return
         if self.current_level.met_trev:
-            self.cutscene()
+            return self.cutscene()
         return None
             
         
