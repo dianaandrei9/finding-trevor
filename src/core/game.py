@@ -6,21 +6,23 @@ from os.path import join
 from src.ui.menu import MainMenu
 from src.story.cutscene_start import StartCutscene
 from src.story.cutscene_end import EndCutscene
+from src.story.cutscene_frames import load_cutscene_frames
+from src.story.end_credits import EndCredits, CREDITS
 
 class Game:
     def __init__(self):
         pygame.init()
 
         # resizable window
-        self.window = pygame.display.set_mode(
-            (WINDOW_WIDTH, WINDOW_HEIGHT),
-            pygame.RESIZABLE
-        )
+        self.window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Finding Trevor")
         
-        icon = pygame.image.load(join("assets", "graphics", "Trev_32x32.png")).convert_alpha()
-       
+        # cutscenes
+        load_cutscene_frames()
+        self.credits = None
+               
         # set window icon
+        icon = pygame.image.load(join("assets", "graphics", "Trev_32x32.png")).convert_alpha()
         pygame.display.set_icon(icon)
         
         # internal surf
@@ -66,7 +68,7 @@ class Game:
 
                 self.present()
                 pygame.display.update()
-                continue
+                continue 
 
             # END CUTSCENE STATE
             if self.state == "end_cutscene":
@@ -75,6 +77,19 @@ class Game:
 
                 # when end cutscene finishes → quit game
                 if self.cutscene.end:
+                    self.credits = EndCredits(self.screen, CREDITS)
+                    self.state = "credits"
+
+                self.present()
+                pygame.display.update()
+                continue
+            
+            # END CREDITS
+            if self.state == "credits":
+                self.credits.update(dt)
+                self.credits.draw()
+
+                if self.credits.finished():
                     pygame.quit()
                     sys.exit()
 
@@ -100,25 +115,44 @@ class Game:
         pygame.quit()
         sys.exit()
 
+    def start_credits(self):
+        self.credits = EndCredits(self.screen, CREDITS)
+        self.state = "credits"
+
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-
             elif event.type == pygame.VIDEORESIZE:
-                # recreate window with new dim
                 self.window = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                self._last_scaled_size = None
-
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                if self.state == "cutscene":
-                    self.cutscene.check()
+                
+                # skip cutscene
+                if event.key == pygame.K_SPACE:
+                    if self.state == "cutscene":
+                        self.cutscene.check(True)
+                    elif self.state == "end_cutscene":
+                        self.cutscene.check(True)
+                        self.start_credits()
+
+                # END OR START CUTSCENE
+                if self.state in ("cutscene", "end_cutscene"):
+                    self.cutscene.check(False)
+
+                # END CUTSCENE
+                if event.key == pygame.K_SPACE and self.state == "end_cutscene":
+                    self.start_credits()
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if self.state == "cutscene":
-                    self.cutscene.check()
+                if self.state in ("cutscene", "end_cutscene"):
+                    self.cutscene.check(False)
+                if self.state == "end_cutscene":
+                    self.start_credits()
+                elif self.state == "credits":
+                    self.running = False
 
 
     def present(self):

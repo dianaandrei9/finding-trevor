@@ -1,20 +1,25 @@
 from os import walk
 from os.path import join
 from src.settings import *
+import src.story.cutscene_frames as cutscene_frames
 
-def import_folder(*path):
-    frames = []
-    for folder_path, subfolders, image_names in walk(join(*path)):
-        for image_name in sorted(image_names, key = lambda name: int(name.split('-')[1].split('.')[0])):
-            full_path = join(folder_path, image_name)
-            frames.append(pygame.image.load(full_path).convert_alpha())
-    return frames
+class StartCutscene(pygame.sprite.Sprite):
+    def __init__(self, screen):
+        super().__init__()
+        self.screen = screen
+        self.frames = cutscene_frames.START_FRAMES
+
+        if self.frames is None:
+            raise RuntimeError("Cutscene frames not loaded. Call load_cutscene_frames() first.")
+
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(topleft=(0, 0))
 
 class EndCutscene(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
         self.screen = screen
-        self.frames = import_folder('assets', 'cutscene', 'end')
+        self.frames = cutscene_frames.END_FRAMES
         self.frame_index = 0
         self.animation_speed = 2.3
         self.end = False
@@ -35,7 +40,7 @@ class EndCutscene(pygame.sprite.Sprite):
             },
             {
                 "speaker": "Trevor",
-                "text": "Kid... I did no get kidnapped. I went with Skeleton myself! Told him to save me from your awful cookin'... Sorry.",
+                "text": "Kid... I did not get kidnapped. I went with Skeleton myself! Told him to save me from your awful cookin'... Sorry.",
                 "start": 24,
                 "end": 58
             }
@@ -140,3 +145,7 @@ class EndCutscene(pygame.sprite.Sprite):
         for i, line in enumerate(lines):
             line_surf = self.font.render(line, True, (255, 255, 255))
             self.screen.blit(line_surf, (bubble_rect.x + 20, bubble_rect.y + 20 + i * 28))
+            
+    def check(self, force):
+        if self.waiting_for_input or force:
+            self.end = True
