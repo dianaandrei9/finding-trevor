@@ -1,20 +1,13 @@
 from os import walk
 from os.path import join
 from src.settings import *
-
-def import_folder(*path):
-    frames = []
-    for folder_path, subfolders, image_names in walk(join(*path)):
-        for image_name in sorted(image_names, key = lambda name: int(name.split('-')[1].split('.')[0])):
-            full_path = join(folder_path, image_name)
-            frames.append(pygame.image.load(full_path).convert_alpha())
-    return frames
+import src.story.cutscene_frames as cutscene_frames
 
 class StartCutscene(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
         self.screen = screen
-        self.frames = import_folder('assets', 'cutscene', 'start')
+        self.frames = cutscene_frames.START_FRAMES
         self.frame_index = 0
         self.animation_speed = 2.7  # frames per second
         self.end = False
@@ -46,8 +39,8 @@ class StartCutscene(pygame.sprite.Sprite):
 
         self.image = self.frames[int(self.frame_index)]
 
-    def check(self):
-        if self.waiting_for_input:
+    def check(self, force):
+        if self.waiting_for_input or force:
             self.end = True
 
     def get_visible_text(self):
