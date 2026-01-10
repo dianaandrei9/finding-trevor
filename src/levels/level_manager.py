@@ -6,8 +6,12 @@ from src.levels.level import Level
 class LevelManager:
     def __init__(self, screen):
         self.screen = screen
+
+        # persistent player data between levels
         self.current_health = 3
         self.inv_data = None
+
+        # levels
         self.level_paths = [
             join("assets", "maps", "levels", "level_1.tmx"),
             join("assets", "maps", "levels", "level_2.tmx"),
@@ -20,15 +24,18 @@ class LevelManager:
     def _load_level(self, index):
         tmx = load_pygame(self.level_paths[index])
         level = Level(tmx, self.screen, self.current_health)
+
+        # restore inventory if there is any
         if self.inv_data:
             level.player.inventory.slot.type = self.inv_data["type"]
             level.player.inventory.slot.amount = self.inv_data["amount"]
         return level
-    
+
     def cutscene(self):
-        return "end_cutscene"  
+        return "end_cutscene"
 
     def next_level(self):
+        # save inventory before switching levels
         self.current_index += 1
         slot = self.current_level.player.inventory.slot
         if slot.type:
@@ -38,7 +45,8 @@ class LevelManager:
             }
         else:
             self.inv_data = None
-        
+
+        # carry over health
         self.current_health = self.current_level.player.health
         if self.current_index < len(self.level_paths):
             self.current_level = self._load_level(self.current_index)
@@ -49,6 +57,7 @@ class LevelManager:
         self.current_level = self._load_level(self.current_index)
 
     def go_to_first_level(self):
+        # full game reset
         self.current_health = 3
         self.current_index = 0
         self.inv_data = None
@@ -59,6 +68,7 @@ class LevelManager:
     def update(self, dt):
         self.current_level.update(dt)
         self.current_level.run(dt)
+
         if getattr(self.current_level, "game_over", False):
             return
         if getattr(self.current_level, "restart", False):
@@ -70,7 +80,6 @@ class LevelManager:
         if self.current_level.met_trev:
             return self.cutscene()
         return None
-            
-        
+
     def draw(self, dt):
         self.current_level.run(dt)

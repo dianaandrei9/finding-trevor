@@ -1,7 +1,6 @@
 from src.settings import *
 from src.levels.level import Level
 from src.levels.level_manager import LevelManager
-from pytmx.util_pygame import load_pygame
 from os.path import join
 from src.ui.menu import MainMenu
 from src.story.cutscene_start import StartCutscene
@@ -16,15 +15,15 @@ class Game:
         # resizable window
         self.window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("Finding Trevor")
-        
-        # cutscenes
+
+        # load both cutscenes for seamless transit at the end cutsecene
         load_cutscene_frames()
         self.credits = None
-               
+
         # set window icon
         icon = pygame.image.load(join("assets", "graphics", "Trev_32x32.png")).convert_alpha()
         pygame.display.set_icon(icon)
-        
+
         # internal surf
         self.screen = pygame.Surface((BASE_WIDTH, BASE_HEIGHT))
         self.clock = pygame.time.Clock()
@@ -35,10 +34,9 @@ class Game:
 
         # MENU
         self.menu = MainMenu(self.screen)
-        
-        # TMX    
-        self.level_manager = LevelManager(self.screen)
 
+        # TMX
+        self.level_manager = LevelManager(self.screen)
 
     def run(self):
         while self.running:
@@ -68,14 +66,14 @@ class Game:
 
                 self.present()
                 pygame.display.update()
-                continue 
+                continue
 
             # END CUTSCENE STATE
             if self.state == "end_cutscene":
                 self.cutscene.update(dt)
                 self.cutscene.draw()
 
-                # when end cutscene finishes → quit game
+                # when end cutscene finishes -> quit game
                 if self.cutscene.end:
                     self.credits = EndCredits(self.screen, CREDITS)
                     self.state = "credits"
@@ -83,7 +81,7 @@ class Game:
                 self.present()
                 pygame.display.update()
                 continue
-            
+
             # END CREDITS
             if self.state == "credits":
                 self.credits.update(dt)
@@ -119,7 +117,6 @@ class Game:
         self.credits = EndCredits(self.screen, CREDITS)
         self.state = "credits"
 
-
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -129,7 +126,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
-                
+
                 # skip cutscene
                 if event.key == pygame.K_SPACE:
                     if self.state == "cutscene":
@@ -164,7 +161,8 @@ class Game:
         new_h = int(BASE_HEIGHT * scale)
 
         scaled = pygame.transform.smoothscale(self.screen, (new_w, new_h))
-        
+
+        # center the scaled surface
         x = (win_w - new_w) // 2
         y = (win_h - new_h) // 2
 

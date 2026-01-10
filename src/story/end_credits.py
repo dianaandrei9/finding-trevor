@@ -33,8 +33,8 @@ CREDITS = [
             "All creators of youtube tutorials for python, pygame and tiled, especially Clear Code",
             "",
             "",
-            "We hope you enjoyed our little project! It took us enough time to get attached to it,", 
-            "well maybe cause we also built it brick by brick, pixel by pixel. Please give us a good grade",
+            "We hope you enjoyed our little project! It took us enough time to get attached to it,",
+            "well maybe cause we also built it brick by brick, pixel by pixel. Please give us a good grade ʕ•ᴥ•ʔ",
             "",
             "#THANK YOU FOR PLAYING!",
             "",
@@ -44,9 +44,10 @@ class EndCredits:
     def __init__(self, screen, lines, speed=80):
         self.screen = screen
         self.lines = lines
-        self.speed = speed
+        self.speed = speed  # pixels per second
 
-        self.font_big_title = pygame.font.Font(None, 100)
+        #  fonts
+        self.font_big_title = pygame.font.Font(None, 150)
         self.font_title = pygame.font.Font(None, 70)
         self.font_text = pygame.font.Font(None, 40)
 
@@ -57,17 +58,20 @@ class EndCredits:
 
     def _prepare_text(self):
         screen_h = self.screen.get_height()
+        # start just below the screen
         y = screen_h + 40
 
         for line in self.lines:
+            # determine style based on prefix
             if line.startswith("?"):
-                surf = self.font_title.render(line[1:], True, (76, 166, 101))
+                surf = self.font_big_title.render(line[1:], True, (76, 166, 101))
             else:
                 if line.startswith("#"):
                     surf = self.font_title.render(line[1:], True, (153, 0, 255))
                 else:
                     surf = self.font_text.render(line, True, (255, 255, 255))
 
+            # center horizontally
             rect = surf.get_rect(centerx=self.screen.get_width() // 2)
             rect.y = y
 
@@ -78,6 +82,7 @@ class EndCredits:
         self.end_y = y
 
     def update(self, dt):
+        # scroll text upwards
         for rect in self.positions:
             rect.y -= self.speed * dt
 

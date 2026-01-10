@@ -5,6 +5,7 @@ from random import choice
 from src.systems.timer import Timer
 from src.entities.player import Player
 
+# importing assets
 def import_folder(*path):
     frames = []
     for folder_path, subfolders, image_names in walk(join(*path)):
@@ -30,11 +31,11 @@ class Runner(pygame.sprite.Sprite):
         self.frames_right = self.frames
         self.frames_left = [pygame.transform.flip(frame, True, False) for frame in self.frames]
 
-        self.max_health = 2 # 2 hits and it dead i think it ok
+        self.max_health = 2 # 2 hits and it's dead
         self.health = self.max_health
         self.is_dead = False
 
-        # flashing
+        # flashing when wounded
         self.original_frames = self.frames
         self.original_frames_left = self.frames_left
         self.original_frames_right = self.frames_right
@@ -46,6 +47,7 @@ class Runner(pygame.sprite.Sprite):
         self.invincible_time = 300  # ms
         self.invincible_timer = 0
 
+    # brings the enemy to the ground 
     def snap_to_ground(self):
         while True:
             self.rect.y += 1
@@ -82,7 +84,7 @@ class Runner(pygame.sprite.Sprite):
 
         # hit flash
         if self.hit_flash_time > 0:
-            self.hit_flash_time -= dt * 1000  # dt is seconds → convert to ms
+            self.hit_flash_time -= dt * 1000  # dt is seconds -> convert to ms
             # flash white
             base_image = frames[int(self.frame_index) % len(frames)]
             self.image = base_image.copy()
@@ -104,9 +106,9 @@ class Runner(pygame.sprite.Sprite):
         floor_rect_left = pygame.Rect(self.rect.bottomleft, (-1, 1))
 
         if floor_rect_right.collidelist(self.collision_rects) < 0 and self.direction > 0:
-           self.direction = -1
+            self.direction = -1
         if floor_rect_left.collidelist(self.collision_rects) < 0 and self.direction < 0:
-           self.direction = 1
+            self.direction = 1
 
 class Boss(pygame.sprite.Sprite):
     def __init__(self, pos, groups, collision_sprites, orbs_group, player_group,display_surf):
@@ -116,30 +118,30 @@ class Boss(pygame.sprite.Sprite):
         self.all_sprites = groups[0]
         self.orbs_group = orbs_group
         self.frames, self.frame_index = import_folder('assets', 'sprites','enemies', 'boss', 'boss'), 0
-        self.original_frames = self.frames.copy() 
+        self.original_frames = self.frames.copy()
         self.image = self.frames[self.frame_index]
         self.rect = self.image.get_rect(topleft = pos)
         self.pos = vector(self.rect.topleft)
         self.damage = 0
-        
+
         # throws
         self.max_attacks = 3    # max throws before getting tired
         self.attack_count = 0
-        self.tired_timer = Timer(6000)  # Boss rests 6 seconds after being tired
+        self.tired_timer = Timer(6000)  #  oss rests 6 seconds after being tired
         self.tired_timer.active = False
         self.is_tired = False
 
         self.collision_rects = [sprite.rect for sprite in collision_sprites]
         self.snap_to_ground()
 
-        self.max_health = 6 # 6 hits and it dead i think it ok
+        self.max_health = 6 # 6 hits and it's dead
         self.health = self.max_health
         self.is_dead = False
 
         # sky orbs
-        self.sky_orbs_timer = Timer(3000)  # every 2 seconds
+        self.sky_orbs_timer = Timer(3000)  # every 3 seconds
         self.sky_orbs_timer.activate()
-        
+
         # attack
         self.attack_timer = Timer(2000)  # every 2 seconds
         self.attack_timer.activate()
@@ -177,8 +179,8 @@ class Boss(pygame.sprite.Sprite):
         for orb in self.orbs_group.sprites():
             orb.kill()
         self.kill()   # remove from game
-    
-    # boss starts shooting when player in range 
+
+    # boss starts shooting when player in range
     def player_in_range(self, player):
         boss_pos = vector(self.rect.center)
         player_pos = vector(player.rect.center)
@@ -197,7 +199,7 @@ class Boss(pygame.sprite.Sprite):
             self.invincible_timer -= dt * 1000
             if self.invincible_timer <= 0:
                 self.invincible = False
-        
+
         # sky orbs
         if player and self.player_in_range(player):
             if not self.sky_orbs_timer.active:
@@ -221,7 +223,7 @@ class Boss(pygame.sprite.Sprite):
                 self.is_tired = False
                 self.attack_count = 0
 
-        # boss tired UGLY HELP
+        # boss tired
         if self.is_tired:
             frame = self.original_frames[int(self.frame_index) % len(self.original_frames)]
             self.image = frame.copy()  # copy original
@@ -235,21 +237,21 @@ class Boss(pygame.sprite.Sprite):
         if self.hit_flash_time > 0:
             self.hit_flash_time -= dt * 1000
             base_image = self.original_frames[int(self.frame_index) % len(self.original_frames)].copy()
-            
+
             # apply gray overlay if tired
             if self.is_tired:
                 gray_surf = pygame.Surface(base_image.get_size(), pygame.SRCALPHA)
                 gray_surf.fill((100,100,100,80))
                 base_image.blit(gray_surf, (0,0))
-            
+
             flash = pygame.Surface(base_image.get_size())
             flash.fill((255,255,255))
             flash.set_alpha(150)
             base_image.blit(flash,(0,0))
-            
+
             self.image = base_image
         else:
-            # restore normal frame (with tired gray if needed)
+            # restore normal frame
             base_image = self.original_frames[int(self.frame_index) % len(self.original_frames)].copy()
             if self.is_tired:
                 gray_surf = pygame.Surface(base_image.get_size(), pygame.SRCALPHA)
@@ -263,14 +265,14 @@ class Boss(pygame.sprite.Sprite):
             vector(1, -1),   # top-right
             vector(-1, 1),   # bottom-left
             vector(1, 1),    # bottom-right
-            vector(0, -1),    # up
+            vector(0, -1),   # up
             vector(1, 0),    # right
             vector(-1, 0)    # left
         ]
 
         for dir in directions:
             Orb(self.rect.center, (self.all_sprites, self.orbs_group), dir, 200, self.player_group)
-    
+
     def summon_sky_orbs(self):
         screen_width = self.display_surface.get_width()
         num_orbs = 5
@@ -286,11 +288,12 @@ class Orb(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=pos)
         self.pos = vector(self.rect.center)
         self.player = player_group
-        
+
         self.direction = direction.normalize()
         self.speed = speed
         self.damage = 1
 
+        # despawn timer
         self.timer = Timer(5000)
         self.timer.activate()
 
@@ -307,6 +310,6 @@ class Orb(pygame.sprite.Sprite):
                     sprite.take_damage(self.damage)
                     self.kill()
                     break
-        
+
         if not self.timer.active:
             self.kill()

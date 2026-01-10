@@ -10,6 +10,7 @@ class ParallaxLayer:
         self.x2 = self.image.get_width()
 
     def update(self, camera_dx):
+        # move layer relative to camera movement
         self.x1 -= camera_dx * self.speed
         self.x2 -= camera_dx * self.speed
 
@@ -18,8 +19,8 @@ class ParallaxLayer:
         if self.x1 <= -w:
             self.x1 = self.x2 + w
         if self.x2 <= -w:
-            self.x2 = self.x1 + w  
-              
+            self.x2 = self.x1 + w
+
         # wrap right
         if self.x1 >= w:
             self.x1 = self.x2 - w

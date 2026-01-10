@@ -10,7 +10,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load("assets/sprites/Tabitha-fixed.png").convert_alpha()
         self.group = groups
-        # rect
+
+        # rects
         self.rect = self.image.get_rect(topleft = pos)
         self.hitbox_rect = self.rect.inflate(-5, 0)
         self.old_rect = self.rect.copy()
@@ -22,14 +23,14 @@ class Player(pygame.sprite.Sprite):
         # attack
         self.attack = False
         self.attack_radius = 64 * 5
-        
+
         # enemies
         self.enemy_group = enemy_group
 
         # inventory
-        self.inventory = Inventory() 
+        self.inventory = Inventory()
 
-        # movement
+        # movement and physics
         self.block_input = False
         self.pos = pos
         self.direction = vector()
@@ -42,9 +43,11 @@ class Player(pygame.sprite.Sprite):
         self.jump_height = 600
         self.platform = None
 
+        # hit feedback
         self.hit_flash_time = 0
         self.hit_flash_duration = 60
 
+        # attack timing
         self.attack_time = 300  # ms
         self.attack_timer = 0
         self.attacking = False
@@ -53,11 +56,11 @@ class Player(pygame.sprite.Sprite):
         self.invincible = False
         self.invincible_timer = 0
         self.invincible_time = 0.8
-        
+
         # collision
         self.collision_sprites = Collision(collision_sprites)
         self.on_surface = {'floor': False, 'left': False, 'right': False}
- 
+
         # timer
         self.timers = {
             'wall jump': Timer(300),
@@ -66,7 +69,7 @@ class Player(pygame.sprite.Sprite):
             'land': Timer(120),
             'attack_cooldown': Timer(900)
         }
-        
+
         # animations
         self.animations = {
             'idle': [],
@@ -84,7 +87,7 @@ class Player(pygame.sprite.Sprite):
 
         self.status = 'idle'
         self.frame_index = 0
-        self.animation_speed = 10  # adjust if too fast/slow
+        self.animation_speed = 10
 
         # load frames
         self.animations['idle'] = self.load_frames('assets/sprites/tabitha_standing_animation')
@@ -101,7 +104,6 @@ class Player(pygame.sprite.Sprite):
 
         # start with first idle frame
         self.image = self.animations['idle'][0]
-
 
     def load_frames(self, path):
         frames = []
@@ -170,7 +172,7 @@ class Player(pygame.sprite.Sprite):
 
             self.image = frames[int(self.frame_index)]
             self.rect.midbottom = self.hitbox_rect.midbottom
-            return 
+            return
 
         if self.status == "attack":
             frame = self.animations["attack"][0]
@@ -232,6 +234,7 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         input_vector = vector(0, 0)
 
+        # block horizontal movement while wall sliding
         if not self.timers['wall jump'].active:
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 input_vector.x += 1
@@ -250,7 +253,6 @@ class Player(pygame.sprite.Sprite):
             self.status = "attack"
             self.start_attack()   # spawn effect + damage
 
-
     def move(self, dt):
         # horizontal
         old_x = self.hitbox_rect.x
@@ -261,6 +263,7 @@ class Player(pygame.sprite.Sprite):
         # vertical
         old_y = self.hitbox_rect.y
         self.direction.y += self.gravity * dt
+
         # sliding on walls yeah
         if (not self.on_surface['floor'] and any((self.on_surface['left'], self.on_surface['right'])) and self.direction.y > 0):
             self.direction.y = min(self.direction.y, self.gravity * 0.1)
@@ -289,7 +292,7 @@ class Player(pygame.sprite.Sprite):
 
         # apply damage
         self.apply_attack_damage()
-        
+
     def take_damage(self, damage):
         if self.invincible:
             return
@@ -298,17 +301,16 @@ class Player(pygame.sprite.Sprite):
         self.hit_flash_time = self.hit_flash_duration
         self.invincible = True
         self.invincible_timer = self.invincible_time
-        
+
     def apply_attack_damage(self):
         cx, cy = self.hitbox_rect.center
         radius = self.attack_radius
 
-        for enemy in self.enemy_group:   # we’ll set this up later
+        for enemy in self.enemy_group:
             ex, ey = enemy.rect.center
             if (cx - ex)**2 + (cy - ey)**2 <= radius * radius:
                 enemy.take_damage(1)
 
-    
     def update_timers(self):
         for timer in self.timers.values():
             timer.update()
@@ -330,13 +332,12 @@ class Player(pygame.sprite.Sprite):
         self.collision_sprites.resolve(self.hitbox_rect, self.old_rect, 'vertical')
 
         self.rect.center = self.hitbox_rect.center
-        
+
         if self.did_jump and self.direction.y > 0 and not self.on_surface['floor']:
             if not self.timers["fall_delay"].active:
                 self.timers["fall_delay"].activate()
         else:
             self.timers["fall_delay"].deactivate()
-
 
         just_landed = (
             self.on_surface['floor'] and
@@ -354,6 +355,7 @@ class Player(pygame.sprite.Sprite):
         self.get_status()
         self.animate(dt)
 
+        # hit flash
         if self.hit_flash_time > 0 and not self.block_input:
             self.hit_flash_time -= dt * 1000  # convert to ms
 
@@ -365,6 +367,7 @@ class Player(pygame.sprite.Sprite):
             base_image.blit(flash, (0, 0))
             self.image = base_image
 
+        # jump handling
         if self.jump:
             if self.on_surface['floor']:
                 self.direction.y = -self.jump_height
@@ -381,6 +384,7 @@ class Player(pygame.sprite.Sprite):
                 self.start_attack()
         self.attack = False
 
+        # invincibility timer
         if self.invincible:
             self.invincible_timer -= dt
             if self.invincible_timer <= 0:
@@ -390,4 +394,3 @@ class Player(pygame.sprite.Sprite):
             self.attack_timer -= dt * 1000
             if self.attack_timer <= 0:
                 self.attacking = False
-

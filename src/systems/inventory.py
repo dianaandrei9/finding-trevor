@@ -1,6 +1,8 @@
 from src.settings import *
 from os.path import join
 
+
+# represents a type of item (KEY)
 class ItemType:
     def __init__(self, name, icon_path):
         self.name = name
@@ -17,36 +19,41 @@ class ItemSlot:
         self.amount = 0
 
     def empty(self):
-        return self.type == None
+        return self.type is None
 
     def clear(self):
         self.type = None
         self.amount = 0
 
 class Inventory:
+    # player inventory, currently ne slot
     def __init__(self):
         self.slot = ItemSlot()
         self.slot_bg = pygame.image.load(join("assets", "graphics", "inventory_slot.png")).convert_alpha()
-    
+
+    # check if slot has a specific item type
     def has(self, item_type):
         return self.slot.type == item_type
 
+    # add item to slot if empty
     def add(self, item_type, amount=1):
         if self.slot.empty():
             self.slot.type = item_type
             self.slot.amount = amount
             return True
 
+    # removes an amount of the certain itemtype
     def remove(self, amount=1):
         if self.slot.empty():
             return False
 
         self.slot.amount -= amount
         if self.slot.amount <= 0:
+            # clear the slot if no more items left
             self.slot.clear()
 
         return True
-    
+
     def draw(self, surface):
         sw, sh = surface.get_size()
 
