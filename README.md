@@ -9,6 +9,12 @@ The game focuses on movement mechanics, basic combat, exploration, and storytell
 
 ---
 
+## Repository link
+	
+	https://github.com/dianaandrei9/finding-trevor.git
+
+---
+
 ## Main Features
 
 - Character movement: walking, jumping, wall jumping, wall sliding
