@@ -7,12 +7,17 @@ class StartCutscene(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
         self.screen = screen
+
+        # animation
         self.frames = cutscene_frames.START_FRAMES
         self.frame_index = 0
         self.animation_speed = 2.7  # frames per second
+
+        # state
         self.end = False
         self.waiting_for_input = False
-        
+
+        # sprite setup
         self.image = self.frames[0]
         self.rect = self.image.get_rect(topleft=(0, 0))
 
@@ -30,6 +35,7 @@ class StartCutscene(pygame.sprite.Sprite):
         if not self.end and not self.waiting_for_input:
             self.frame_index += self.animation_speed * dt
 
+            # clamp animation to final frame
             if self.frame_index >= len(self.frames):
                 self.frame_index = len(self.frames) - 1
 
@@ -39,10 +45,12 @@ class StartCutscene(pygame.sprite.Sprite):
 
         self.image = self.frames[int(self.frame_index)]
 
+    # ends animation when input is provided or when forced
     def check(self, force):
         if self.waiting_for_input or force:
             self.end = True
 
+    # typewriter-style text reveal based on animation progress
     def get_visible_text(self):
         if self.frame_index < self.text_start_frame:
             return ""
@@ -58,7 +66,8 @@ class StartCutscene(pygame.sprite.Sprite):
         visible_chars = int(current_frame * chars_per_frame)
 
         return self.text[:visible_chars]
-    
+
+    # wrap text to fit inside the bubble
     def wrap_text(self, text, font, max_width):
         words = text.split(" ")
         lines = []
@@ -81,7 +90,7 @@ class StartCutscene(pygame.sprite.Sprite):
 
     def draw(self):
         self.screen.blit(self.image, (0, 0))
-        
+
         # speech bubble
         screen_rect = self.screen.get_rect()
 
@@ -96,7 +105,7 @@ class StartCutscene(pygame.sprite.Sprite):
         text = self.get_visible_text()
         lines = self.wrap_text(text, self.font, max_width=bubble_rect.width - 40)
         lines = lines[:4]
-        
+
         for i, line in enumerate(lines):
             line_surf = self.font.render(line, True, (255, 255, 255))
             self.screen.blit( line_surf, (bubble_rect.x + 20, bubble_rect.y + 20 + i * 28))

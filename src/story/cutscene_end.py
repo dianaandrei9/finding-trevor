@@ -19,18 +19,22 @@ class EndCutscene(pygame.sprite.Sprite):
     def __init__(self, screen):
         super().__init__()
         self.screen = screen
+        # animation
         self.frames = cutscene_frames.END_FRAMES
         self.frame_index = 0
         self.animation_speed = 2.3
+
+        # state
         self.end = False
         self.waiting_for_input = False
 
+        # sprite setup
         self.image = self.frames[0]
         self.rect = self.image.get_rect(topleft=(0, 0))
 
         self.font = pygame.font.Font(None, 36)
 
-        # --- MULTI-SPEAKER DIALOGUE SETUP ---
+        # multi-speaker dialog
         self.dialogue = [
             {
                 "speaker": "Tabitha",
@@ -71,6 +75,7 @@ class EndCutscene(pygame.sprite.Sprite):
                 return segment
         return None
 
+    # typewriter-style text reveal based on animation progress
     def get_visible_text(self):
         if not self.current_dialogue:
             return ""
@@ -90,13 +95,11 @@ class EndCutscene(pygame.sprite.Sprite):
 
         current_frame = int(self.frame_index) - start
         chars_per_frame = total_chars / total_frames
-        visible_chars = min(
-            len(text),
-            round((current_frame + 1) * chars_per_frame)
-        )
+        visible_chars = min(len(text), round((current_frame + 1) * chars_per_frame))
 
         return text[:visible_chars]
 
+    # wrap text to fit inside the bubble
     def wrap_text(self, text, font, max_width):
         words = text.split(" ")
         lines = []
@@ -132,7 +135,7 @@ class EndCutscene(pygame.sprite.Sprite):
         pygame.draw.rect(self.screen, (10, 11, 23), bubble_rect, border_radius=8)
         pygame.draw.rect(self.screen, (255, 255, 255), bubble_rect, 3, border_radius=8)
 
-        # speaker name (optional)
+        # speaker name
         speaker = self.current_dialogue["speaker"]
         speaker_surf = self.font.render(speaker, True, (200, 200, 255))
         self.screen.blit(speaker_surf, (bubble_rect.x + 20, bubble_rect.y - 30))
@@ -145,7 +148,8 @@ class EndCutscene(pygame.sprite.Sprite):
         for i, line in enumerate(lines):
             line_surf = self.font.render(line, True, (255, 255, 255))
             self.screen.blit(line_surf, (bubble_rect.x + 20, bubble_rect.y + 20 + i * 28))
-            
+
+    # ends animation when input is provided or when forced
     def check(self, force):
         if self.waiting_for_input or force:
             self.end = True

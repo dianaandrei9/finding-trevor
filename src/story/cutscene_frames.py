@@ -5,6 +5,7 @@ from os.path import join
 START_FRAMES = None
 END_FRAMES   = None
 
+# import assets
 def import_folder(*path):
     frames = []
     for folder_path, _, image_names in walk(join(*path)):
@@ -15,7 +16,6 @@ def import_folder(*path):
             full_path = join(folder_path, image_name)
             frames.append(pygame.image.load(full_path).convert_alpha())
     return frames
-
 
 def load_cutscene_frames():
     global START_FRAMES, END_FRAMES

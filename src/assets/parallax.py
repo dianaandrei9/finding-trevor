@@ -4,10 +4,11 @@ class ParallaxLayer:
         self.speed = speed
 
     def draw(self, surface, camera_x):
+        # calculate horizontal offset based on camera position
         x = -camera_x * self.speed
         width = self.image.get_width()
 
-        # inf repetitionn
+        # infinite repetitionn
         x = x % width
 
         surface.blit(self.image, (x - width, 0))

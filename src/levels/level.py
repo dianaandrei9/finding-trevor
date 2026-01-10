@@ -17,7 +17,7 @@ class Level:
         self.tmx_map = tmx_map
         self.parallax = ParallaxBackground( folder_path="assets/parallax", speeds=[0.02, 0.05, 0.08, 0.12, 0.18, 0.25, 0.35, 0.5] )
         self.trevor = None
-        
+
         # groups
         self.moving_sprites = pygame.sprite.Group()
         self.all_sprites  = pygame.sprite.Group()
@@ -29,51 +29,51 @@ class Level:
         self.orbs_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
 
-        
         # death zone
         self.death_rects = []
         self.start_health = health
-        
+
         # end lvl
         self.level_complete = False
         self.level_end_rect = None
         self.game_over = False
         self.restart = False
         self.met_trev = False
-        
+
         self.setup(tmx_map)
 
     def setup(self, tmx_map):
-        # clear 
+        # clear
         self.all_sprites.empty()
         self.collision_sprites.empty()
         self.moving_sprites.empty()
         self.items.empty()
         self.gate.empty()
         self.death_rects.clear()
-        
-        # tiles
+
+        # load tiles
         for layer in tmx_map.layers:
             if hasattr(layer, 'name') and layer.name.startswith("terrain"):
                 tint_hex = layer.properties.get('tint')
                 tint_color = pygame.Color(tint_hex) if tint_hex else None
-                                
+
                 for x,y,surf in layer.tiles():
                     if tint_color:
                         image = surf.copy()
                         tint = pygame.Surface(image.get_size(), pygame.SRCALPHA)
                         tint.fill(tint_color)
                         image.blit(tint, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-                    else: 
+                    else:
                         image = surf
                     if layer.properties.get('collidable') == True:
                         Sprite((x * TILE_SIZE , y * TILE_SIZE), image, (self.all_sprites, self.collision_sprites))
                     else:
                         Sprite((x * TILE_SIZE , y * TILE_SIZE), image, (self.all_sprites))
 
+        # key checks
         key_type = Key.key
         key_type.load_icon()
-        
+
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
             if obj.name == 'Tabitha':
@@ -84,18 +84,18 @@ class Level:
                 self.level_end_rect = pygame.Rect( obj.x, obj.y, obj.width, obj.height)
             if obj.name == "Key":
                 amount = obj.properties.get("amount", 1)
-                DroppedItem( pos=(obj.x + obj.width // 2, obj.y + obj.height // 2), item_type=key_type, amount=amount, groups=(self.all_sprites, self.items))                
-            
+                DroppedItem( pos=(obj.x + obj.width // 2, obj.y + obj.height // 2), item_type=key_type, amount=amount, groups=(self.all_sprites, self.items))
+
             # enemies
             if obj.name == 'runner':
                 runner = Runner((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites)
-                # self.player.enemy_grseoup.add(runner)
             if obj.name == 'Boss':
                 boss = Boss((obj.x, obj.y), (self.all_sprites, self.damage_sprites, self.enemies), self.collision_sprites, self.orbs_group, self.player_group ,self.display_surface)
-                # self.player.enemy_group.add(boss)
+
+        # set health
         self.health = Health(self.display_surface, self.player.health, self.player.max_health)
 
-        # trigger
+        # trigger events
         for obj in tmx_map.get_layer_by_name('block_movement'):
             if obj.name == "death":
                 self.death_rects.append(pygame.Rect(obj.x, obj.y, obj.width, obj.height))
@@ -108,51 +108,51 @@ class Level:
                 self.gate.add(gate)
                 self.all_sprites.add(gate)
                 gate.collider = Collider(rect, self.collision_sprites)
-        
+
         # moving objects (platforms)
         if 'moving_platforms' in tmx_map.layernames:
-            for obj in tmx_map.get_layer_by_name('moving_platforms'): 
+            for obj in tmx_map.get_layer_by_name('moving_platforms'):
                 if obj.properties.get('platform') is True:
                     if obj.name == 'platform1':
                         # horizontal
                         move_dir = 'x'
                         start_pos = (obj.x, obj.y + obj.height / 2)
-                        end_pos = (obj.x + obj.width, obj.y + obj.height / 2) 
+                        end_pos = (obj.x + obj.width, obj.y + obj.height / 2)
                         speed = obj.properties['speed']
                         MovingSprite((self.all_sprites, self.collision_sprites, self.moving_sprites), start_pos, end_pos, move_dir, speed, 1)
-                        
+
                     if obj.name == 'platform2':
                         # horizontal
                         move_dir = 'x'
-                        start_pos = (obj.x + obj.width, obj.y + obj.height / 2) 
+                        start_pos = (obj.x + obj.width, obj.y + obj.height / 2)
                         end_pos = (obj.x, obj.y + obj.height / 2)
                         speed = obj.properties['speed']
                         MovingSprite((self.all_sprites, self.collision_sprites, self.moving_sprites), start_pos, end_pos, move_dir, speed, 2)
-                        
+
                     if obj.name == 'platform3':
                         # horizontal
                         move_dir = 'x'
                         start_pos = (obj.x, obj.y + obj.height / 2)
-                        end_pos = (obj.x + obj.width, obj.y + obj.height / 2) 
+                        end_pos = (obj.x + obj.width, obj.y + obj.height / 2)
                         speed = obj.properties['speed']
                         MovingSprite((self.all_sprites, self.collision_sprites, self.moving_sprites), start_pos, end_pos, move_dir, speed, 3)
-                    
-                
-    def update(self, dt: float):   
+
+    def update(self, dt: float):
+        # camera movement for parallax
         player = next((s for s in self.all_sprites if isinstance(s, Player)), None)
         if player:
             camera_dx = player.actual_dx
         else:
-            camera_dx = 0 
-        
+            camera_dx = 0
+
         if not self.game_over:
             self.parallax.update(camera_dx)
-            
+
         # inventory check
         hits = pygame.sprite.spritecollide(self.player, self.items, dokill=True)
         for item in hits:
-           self.player.inventory.add(item.item_type, item.amount)
-        
+            self.player.inventory.add(item.item_type, item.amount)
+
         # hits
         damage_hits = pygame.sprite.spritecollide(self.player, self.damage_sprites, dokill=False)
         for sprite in damage_hits:
@@ -162,11 +162,11 @@ class Level:
                     # big respawn == death => menu screen
                     self.game_over = True
                     return
-            
+
         # open gate
-        for gate in self.gate: 
+        for gate in self.gate:
             gate.update(self.player)
-        
+
         # kill zone check
         for r in self.death_rects:
             if self.player.hitbox_rect.colliderect(r):
@@ -181,15 +181,19 @@ class Level:
                     self.player.health = 0
                     self.game_over = True
                     return
-        
+
+        # updates
         self.moving_sprites.update(dt)
         self.player_group.update(dt)
         self.health.set_health(self.player.health)
+        self.orbs_group.update(dt)
+
+        # Trevor interaction
         if self.trevor and not self.met_trev:
             if self.player.rect.colliderect(self.trevor.rect):
                 self.met_trev = True
                 return
-        self.orbs_group.update(dt)
+
         if self.player.health == 0:
             self.game_over = True
             return
@@ -199,16 +203,19 @@ class Level:
             if self.player.rect.colliderect(self.trevor.rect):
                 self.met_trev = True
                 return
+
+        # level end
         if self.level_end_rect and self.player.rect.colliderect(self.level_end_rect):
             pygame.draw.rect(self.display_surface, (255, 0 ,0), self.level_end_rect, 2)
             self.level_complete = True
-        
+
     def run(self, dt):
         self.parallax.draw(self.display_surface)
         self.all_sprites.draw(self.display_surface)
         self.health.empty_hearts()
         self.player.inventory.draw(self.display_surface)
-        
+
+        #  game over menu
         if self.game_over:
             self.player.block_input = True
             result = self.game_over_menu.run()

@@ -12,6 +12,8 @@ class Timer:
         self.active = True
         self.start_time = get_ticks()
 
+    # stops timer
+    # resets start_time and marks the timer as inactive
     def deactivate(self):
         self.active = False
         self.start_time = 0

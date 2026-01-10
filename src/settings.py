@@ -1,10 +1,10 @@
 import pygame, sys
-from pygame.math import Vector2 as vector 
+from pygame.math import Vector2 as vector
 
 BASE_WIDTH, BASE_HEIGHT = 1920, 1080
-WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720 
+WINDOW_WIDTH, WINDOW_HEIGHT = 1280, 720
 
 TILE_SIZE = 16
-FPS = 60 
+FPS = 60
 RUNNER_ANIMATION_SPEED = 6
 BOSS_ANIMATION_SPEED = 3
