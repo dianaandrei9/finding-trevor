@@ -3,7 +3,8 @@
 ## Game Description
 
 **Finding Trevor** is a 2D platformer game created using **Python** and **Pygame**.  
-The player controls **Tabitha**, who must go through different levels, avoid enemies, collect items, and solve simple challenges in order to rescue her familiar, **Trevor**.
+The player controls **Tabitha**, a witch who must go through different levels, avoid enemies, collect items,
+and solve simple challenges in order to rescue her pet familiar, **Trevor**.
 
 The game focuses on movement mechanics, basic combat, exploration, and storytelling through cutscenes.
 
@@ -12,6 +13,12 @@ The game focuses on movement mechanics, basic combat, exploration, and storytell
 ## Repository link
 	
 	https://github.com/dianaandrei9/finding-trevor.git
+
+---
+
+## Drive link - for progress pictures and all the hand-drawn textures
+
+    https://drive.google.com/drive/folders/1rCwskGSoIl-SgL3mxWV-CcD0sT0Tv2Mr?usp=sharing
 
 ---
 
@@ -34,6 +41,7 @@ The game focuses on movement mechanics, basic combat, exploration, and storytell
 - Pygame
 - pytmx for loading Tiled (TMX) maps
 - Sprite animations using PNG image sequences
+- Hand-drawn animations and images in Procreate
 
 ---
 

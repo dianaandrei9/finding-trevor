@@ -15,7 +15,7 @@ class ParallaxLayer:
         self.x2 -= camera_dx * self.speed
 
         w = self.image.get_width()
-        # wrrap left
+        # wrap left
         if self.x1 <= -w:
             self.x1 = self.x2 + w
         if self.x2 <= -w:

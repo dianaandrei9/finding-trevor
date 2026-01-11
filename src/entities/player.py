@@ -114,7 +114,7 @@ class Player(pygame.sprite.Sprite):
 
     def get_status(self):
 
-        # Landing overrides everything
+        # landing override
         if self.timers["land"].active:
             self.status = "land"
             return
@@ -124,7 +124,7 @@ class Player(pygame.sprite.Sprite):
             self.status = "attack"
             return
 
-        # WALL RIDE
+        # wall ride
         if not self.on_surface['floor'] and (self.on_surface['left'] or self.on_surface['right']):
             if self.status not in ("wall_right", "wall_left"):
                 self.frame_index = 0
@@ -162,11 +162,11 @@ class Player(pygame.sprite.Sprite):
     def animate(self, dt):
         if self.status == "land":
             frames = self.animations["land"]
-            speed = 3  # fast snap landing
+            speed = 3  # fast snap landing (looks ok)
 
             self.frame_index += speed * dt
 
-            # stop at last frame (do NOT loop)
+            # stop at last frame (no loop)
             if self.frame_index >= len(frames):
                 self.frame_index = len(frames) - 1
 
@@ -199,11 +199,11 @@ class Player(pygame.sprite.Sprite):
 
         frames = self.animations[self.status]
 
-        # different speeds per animation
+        # different speeds for anims
         if self.status == 'idle':
-            speed = 2      # slow
+            speed = 2      # slower, looked weird
         elif self.status in ('walk', 'walk_back'):
-            speed = 10     # normal
+            speed = 10
         elif self.status in ('jump_right', 'jump_left'):
             speed = 4
         elif self.status in ('fall_right', 'fall_left'):
@@ -214,7 +214,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_index += speed * dt
 
         if self.status in ('jump_right', 'jump_left'):
-            max_jump_frames = 5  # frames 0,1,2,3,4
+            max_jump_frames = 5  # first 5 frames
 
             if self.frame_index >= max_jump_frames:
                 self.frame_index = max_jump_frames - 1  # freeze on frame 4
@@ -251,7 +251,7 @@ class Player(pygame.sprite.Sprite):
             self.attacking = True
             self.attack_timer = self.attack_time
             self.status = "attack"
-            self.start_attack()   # spawn effect + damage
+            self.start_attack()   # spawn effect and damage
 
     def move(self, dt):
         # horizontal

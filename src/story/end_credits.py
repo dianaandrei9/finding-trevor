@@ -2,8 +2,8 @@ import pygame
 
 CREDITS = [
             "",
-            "You got Trevor back! Seems like he didnt need saving... But anyway!",
-            "You got some harsh feedback... dont take it to heart...maybe do...fix your cooking",
+            "You got Trevor back! Seems like he didn't need saving... But anyway!",
+            "You got some harsh feedback... Don't take it to heart... Or maybe do... Fix your cooking.",
             "",
             "",
             "?FINDING TREVOR",
@@ -33,8 +33,8 @@ CREDITS = [
             "All creators of youtube tutorials for python, pygame and tiled, especially Clear Code",
             "",
             "",
-            "We hope you enjoyed our little project! It took us enough time to get attached to it,",
-            "well maybe cause we also built it brick by brick, pixel by pixel. Please give us a good grade ʕ•ᴥ•ʔ",
+            "We hope you enjoyed our little project! It took us a while and we got attached to it,",
+            "well maybe because we built it brick by brick, pixel by pixel. Please give us a good grade ^-^",
             "",
             "#THANK YOU FOR PLAYING!",
             "",

@@ -84,7 +84,7 @@ class Runner(pygame.sprite.Sprite):
 
         # hit flash
         if self.hit_flash_time > 0:
-            self.hit_flash_time -= dt * 1000  # dt is seconds -> convert to ms
+            self.hit_flash_time -= dt * 1000  # dt is seconds, convert to ms
             # flash white
             base_image = frames[int(self.frame_index) % len(frames)]
             self.image = base_image.copy()
@@ -134,7 +134,7 @@ class Boss(pygame.sprite.Sprite):
         self.collision_rects = [sprite.rect for sprite in collision_sprites]
         self.snap_to_ground()
 
-        self.max_health = 6 # 6 hits and it's dead
+        self.max_health = 6 # 6 hits and it's dead (i can't beat him with more dude)
         self.health = self.max_health
         self.is_dead = False
 
